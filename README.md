@@ -43,5 +43,3 @@ No output is printed if there are no differences.
 Remove `-w` if whitespace should not be ignored.
 
 Read `man sed` and `man diff` for further options and info.
-
-
