@@ -28,7 +28,9 @@ diff -w -u file1.txt file2.txt | sed -n '1,2d;/^[-+]/p'
 
 `diff` finds difference between files 1 and 2  
 `-w` ignores whitespace   
-`-u` output NUM (default 3) lines of unified context; not 100% sure why or if this is necessary, probably makes it easier to parse it with the sed regex  
+`-u` output NUM (default 3) lines of unified context  
+not 100% sure why or if `-u` this is necessary, probably makes it easier to parse it with the sed regex
+
 Then it pipes into `sed`  
 `sed` is a stream editor to edit output of `diff`  
 `-n` supress automatic printing of pattern space  
