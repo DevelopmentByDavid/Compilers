@@ -11,25 +11,107 @@
 %union{
   double dval;
   int ival;
+
+  Program*              program;
+  Function*             function;
+  Functions*            functions;
+  Declaration*          declaration;
+  Statement*            statement;
+  Statements*           statements;
+  Bool_Expr*            bool_expr;
+  Relation_And_Expr*    relation_and_expr;
+  Relation_Expr*        relation_expr;
+  Comp*                 comp;
+  Expression*           expression;
+  Multiplicative_Expr*  multiplicative_expr;
+  Term*                 term;
+  Var*                  var;
+  Vars*                 vars;
+  Epsilon*              epsilon;
 }
 
 %error-verbose
+
 %start input
 %token MULT DIV PLUS MINUS EQUAL L_PAREN R_PAREN END
 %token <dval> NUMBER
 %type <dval> exp
+
+%type <program> Program
+%type <function> Function
+%type <functions> Functions
+%type <declaration> Declaration
+%type <statement> Statement
+%type <bool_expr> Bool_Expr
+%type <relation_and_expr> Relation_And_Expr
+%type <relation_expr> Relation_Expr
+%type <comp> Comp
+%type <expression> Expression
+%type <multiplicative_expr> Multiplicative_Expr
+%type <term> Term
+%type <var> Var
+%type <epsilon> Epsilon
+%type <ident> Ident
+
 %left PLUS MINUS
 %left MULT DIV
+
+%right  ASSIGN
+%left   OR
+%left   AND
+%right  NOT
+%left   NEQ
+%left   GTE
+%left   GT
+%left   LTE
+%left   LT
+%left   SUB
+%left   ADD
+%left   MOD
+%left   DIV
+%left   MULT
+%right  SUB
+%left   L_SQUARE_BRACKET R_SQUARE_BRACKET
+%left   L_PAREN R_PAREN
+
+
 %nonassoc UMINUS
 
 
 %% 
-input:	
-			| input line
-			;
-
-line:		exp EQUAL END         { printf("\t%f\n", $1);}
-			;
+Program:	Functions    { $$ =  $1 /*default behavior but including anyways*/} 
+			  ;
+Functions:  Function Functions
+          : Epsilon
+          ;
+Function:   Function          { $$ = $1 /*default behavior but including anyways*/}
+          | FUNCTION IDENT SEMICOLON BEGIN_PARAMS Declarations SEMICOLON END_PARAMS BEGIN_LOCALS Declarations SEMICOLON END_LOCALS BEGIN_BODY Statements SEMICOLON END_BODY
+          | Epsilon
+          | Declaration SEMICOLON
+          | 
+			    ;
+Statements:   statement SEMICOLON statements
+            | Epsilon
+            ;
+Statement:  IF Bool_Expr then STATEMENTS ENDIF
+          |  WRITE Vars
+          |  
+          ;
+Vars:       var
+          ;
+Var:        Ident L_SQUARE_BRACKET Expression R_SQUARE_BRACKET
+          | Ident
+          ;
+Expression: Multiplicative_Expr
+          | 
+          ;
+Multiplicative_Expr:    Term
+                      |
+                      ;
+Term: Var
+    ;
+Ident:    IDENT
+        ;
 
 exp:		NUMBER                { $$ = $1; }
 			| exp PLUS exp        { $$ = $1 + $3; }
