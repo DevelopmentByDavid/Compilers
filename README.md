@@ -4,7 +4,7 @@
 
 ```
     flex myFile.l
-    gcc -o output -lfl //IF ON MAC OS USE -ll (two L's) instead!!!!!!!!!!!
+    gcc lex.yy.c -o output -lfl //IF ON MAC OS USE -ll (two L's) instead!!!!!!!!!!!
     ./output
 ```
 
