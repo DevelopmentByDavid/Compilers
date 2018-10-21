@@ -72,7 +72,7 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 
 ({DIGIT}|(_))+{IDENTIFIER}      {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
 {IDENTIFIER}(_)+                {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
-{IDENTIFIER}(__)+{IDENTIFIER}   {printf("Error at line %d, column %d: identifier \"%s\" cannot contain consecutive underscores\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
+{IDENTIFIER}(_)+{IDENTIFIER}   {printf("Error at line %d, column %d: identifier \"%s\" cannot contain consecutive underscores\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
 
 [ \t]+         {/* ignore spaces */ currPos += yyleng;}
 

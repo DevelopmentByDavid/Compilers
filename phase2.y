@@ -5,122 +5,120 @@
  void yyerror(const char *msg);
  extern int currLine;
  extern int currPos;
- FILE * yyin;
 %}
 
-%union{
-  double dval;
-  int ival;
-
-  Program*              program;
-  Function*             function;
-  Functions*            functions;
-  Declaration*          declaration;
-  Statement*            statement;
-  Statements*           statements;
-  Bool_Expr*            bool_expr;
-  Relation_And_Expr*    relation_and_expr;
-  Relation_Expr*        relation_expr;
-  Comp*                 comp;
-  Expression*           expression;
-  Multiplicative_Expr*  multiplicative_expr;
-  Term*                 term;
-  Var*                  var;
-  Vars*                 vars;
-  Epsilon*              epsilon;
+%union {
+    String string;
 }
 
-%error-verbose
+//start symbol
+%start      program
 
-%start input
-%token MULT DIV PLUS MINUS EQUAL L_PAREN R_PAREN END
-%token <dval> NUMBER
-%type <dval> exp
-
-%type <program> Program
-%type <function> Function
-%type <functions> Functions
-%type <declaration> Declaration
-%type <statement> Statement
-%type <bool_expr> Bool_Expr
-%type <relation_and_expr> Relation_And_Expr
-%type <relation_expr> Relation_Expr
-%type <comp> Comp
-%type <expression> Expression
-%type <multiplicative_expr> Multiplicative_Expr
-%type <term> Term
-%type <var> Var
-%type <epsilon> Epsilon
-%type <ident> Ident
-
-%left PLUS MINUS
-%left MULT DIV
-
-%right  ASSIGN
-%left   OR
-%left   AND
-%right  NOT
-%left   NEQ
-%left   GTE
-%left   GT
-%left   LTE
-%left   LT
-%left   SUB
-%left   ADD
-%left   MOD
-%left   DIV
-%left   MULT
-%right  SUB
-%left   L_SQUARE_BRACKET R_SQUARE_BRACKET
-%left   L_PAREN R_PAREN
-
-
-%nonassoc UMINUS
-
+%type <string> function
+%type <string> functions
+%type <string> declaration
+%type <string> declarations
+%type <string> statement
+%type <string> bool_expr
+%type <string> relation_and_expr
+%type <string> relation_expr
+%type <string> comp
+%type <string> expression
+%type <string> expressions
+%type <string> multiplicative_expr
+%type <string> term
+%type <string> var
+%type <string> epsilon
 
 %% 
-Program:	Functions    { $$ =  $1 /*default behavior but including anyways*/} 
-			  ;
-Functions:  Function Functions
-          : Epsilon
-          ;
-Function:   Function          { $$ = $1 /*default behavior but including anyways*/}
-          | FUNCTION IDENT SEMICOLON BEGIN_PARAMS Declarations SEMICOLON END_PARAMS BEGIN_LOCALS Declarations SEMICOLON END_LOCALS BEGIN_BODY Statements SEMICOLON END_BODY
-          | Epsilon
-          | Declaration SEMICOLON
-          | 
-			    ;
-Statements:   statement SEMICOLON statements
-            | Epsilon
+program     :   Functions           {$$ =  "program -> functions"} 
+            |
+		    ;
+
+functions   :   function functions  {$$ = "function -> functions"}
+            :   epsilon             {$$ = "function -> epsilon"}
             ;
-Statement:  IF Bool_Expr then STATEMENTS ENDIF
-          |  WRITE Vars
-          |  
-          ;
-Vars:       var
-          ;
-Var:        Ident L_SQUARE_BRACKET Expression R_SQUARE_BRACKET
-          | Ident
-          ;
-Expression: Multiplicative_Expr
-          | 
-          ;
-Multiplicative_Expr:    Term
-                      |
-                      ;
-Term: Var
-    ;
-Ident:    IDENT
+
+function    :   FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations SEMICOLON END_PARAMS BEGIN_LOCALS declarations SEMICOLON END_LOCALS BEGIN_BODY statements SEMICOLON END_BODY {$$ = "function -> long rule"}
+            ;
+
+declarations    :   declaration SEMICOLON declarations  {$$ = "declarations -> declaration SEMICOLON declarations"}
+                |   epsilon                             {$$ = "declarations -> epsilon"}
+                ;
+
+declaration     :   IDENT COMMA statements  {$$ = "statements -> IDENT COMMA statements"}
+                |   IDENT COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {$$ = "statements -> IDENT COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER"}
+                |   IDENT COLON INTEGER {$$ = "statements -> IDENT COLON INTEGER"}
+                ;
+
+statements      :   statement SEMICOLON statements  {$$ = "statements -> statement SEMICOLON statements"}
+                |   epsilon                         {$$ = "statements -> epsilon"}
+                ;
+
+statement       :   var ASSIGN expression                               {$$ = "statement -> var ASSIGN expression"}
+                |   IF bool_expr THEN statements ENDIF                  {$$ = "statement -> IF bool_expr THEN statements ENDIF"}
+                |   IF bool_expr THEN statements ELSE statements ENDIF  {$$ = "statement -> IF bool_expr THEN statements ELSE statements ENDIF"}
+                |   WHILE bool_expr BEGINLOOP statements ENDLOOP        {$$ = "statement -> WHILE bool_expr BEGINLOOP statements ENDLOOP"}
+                |   DO BEGINLOOP statements ENDLOOP WHILE bool_expr     {$$ = "statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_expr"}
+                |   READ vars                                           {$$ = "statement ->  READ vars"}
+                |   WRITE vars                                          {$$ = "statement -> WRITE vars"}
+                |   CONTINUE                                            {$$ = "statement -> CONTINUE"}
+                |   RETURN expression                                   {$$ = "statement -> RETURN expression"}
+                ;
+
+bool_expr       :   relation_and_expr                       {$$ = "bool_expr -> relation_and_expr"}
+                |   relation_and_expr OR relation_and_expr  {$$ = "bool_expr -> relation_and_expr OR relation_and_expr"}
+                ;
+
+relation_and_expr       :   relation_expr                   {$$ = "relation_and_expr -> relation_expr"}
+                        |   relation_expr AND relation_expr {$$ = "relation_and_expr -> relation_expr AND relation_expr"}
+                        ;
+
+relation_expr           :   expression comp expression      {$$ = "relation_expr -> expression comp expression"}
+                        |   TRUE                            {$$ = "relation_expr -> TRUE"}
+                        |   FALSE                           {$$ = "relation_expr -> FALSE"}
+                        |   L_PAREN bool_expr R_PAREN       {$$ = "relation_expr -> L_PAREN bool_expr R_PAREN"}
+                        |   NOT expression comp expression  {$$ = "relation_expr -> NOT expression comp expression"}
+                        |   NOT TRUE                        {$$ = "relation_expr -> NOT TRUE"}
+                        |   NOT FALSE                       {$$ = "relation_expr -> NOT FALSE"}
+                        |   NOT L_PAREN bool_expr R_PAREN   {$$ = "relation_expr -> NOT L_PAREN bool_expr R_PAREN"}
+                        ;
+
+comp    :   EQ      {$$ = "comp -> EQ"}
+        |   NEQ     {$$ = "comp -> NEQ"}
+        |   LT      {$$ = "comp -> LT"}
+        |   GT      {$$ = "comp -> GT"}
+        |   LTE     {$$ = "comp -> LTE"}
+        |   GTE     {$$ = "comp -> GTE"}
         ;
 
-exp:		NUMBER                { $$ = $1; }
-			| exp PLUS exp        { $$ = $1 + $3; }
-			| exp MINUS exp       { $$ = $1 - $3; }
-			| exp MULT exp        { $$ = $1 * $3; }
-			| exp DIV exp         { if ($3==0) yyerror("divide by zero"); else $$ = $1 / $3; }
-			| MINUS exp %prec UMINUS { $$ = -$2; }
-			| L_PAREN exp R_PAREN { $$ = $2; }
-			;
+expression  :   multiplicative_expr                             {$$ = "expression -> multiplicative_expr"}
+            |   multiplicative_expr SUB multiplicative_expr     {$$ = "expression -> multiplicative_expr SUB multiplicative_expr"}
+            |   multiplicative_expr ADD multiplicative_expr     {$$ = "expression -> multiplicative_expr ADD multiplicative_expr"}
+            ;
+
+expressions :   expression COMMA expressions    {$$ = "expressions -> expression COMMA expressions"}
+            |   epsilon                         {$$ = "expressions -> epsilon"}
+            ;
+
+multiplicative_expr     :   term            {$$ = "multiplicative_expr -> term"}
+                        |   term MOD term   {$$ = "multiplicative_expr -> term MOD term"}
+                        |   term DIV term   {$$ = "multiplicative_expr -> term DIV term"}
+                        |   term MULT term  {$$ = "multiplicative_expr -> term MULT term"}
+                        ;
+
+term    :   IDENT L_PAREN expression R_PAREN    {$$ = "term -> IDENT L_PAREN expression R_PAREN"}
+        |   NUMBER                              {$$ = "term -> NUMBER"}
+        |   var                                 {$$ = "term -> var"}
+        |   L_PAREN expressions R_PAREN         {$$ = "term -> L_PAREN expressions R_PAREN"}
+        |   SUB NUMBER                          {$$ = "term -> SUB NUMBER"}
+        |   SUB var                             {$$ = "term -> SUB var"}
+        |   SUB L_PAREN expressions R_PAREN     {$$ = "term -> SUB L_PAREN expressions R_PAREN"}
+        ;
+
+var     :   IDENT
+        |   IDENT   L_SQUARE_BRACKET expression R_SQUARE_BRACKET
+        ;
 %%
 
 int main(int argc, char **argv) {
