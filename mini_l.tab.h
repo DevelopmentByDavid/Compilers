@@ -102,9 +102,9 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 9 "mini_l.y" /* yacc.c:1913  */
+#line 12 "mini_l.y" /* yacc.c:1913  */
 
-    string *myType;
+    char *char_pointer;
 
 #line 110 "mini_l.tab.h" /* yacc.c:1913  */
 };
