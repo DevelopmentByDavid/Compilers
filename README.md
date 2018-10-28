@@ -43,3 +43,12 @@ No output is printed if there are no differences.
 Remove `-w` if whitespace should not be ignored.
 
 Read `man sed` and `man diff` for further options and info.
+
+## Bison flags
+
+`-k` generates a token table  
+`-x` generates an xml file of the grammar for visual representation  
+`-g` generates a .DOT file; not sure the proper application to open this for the visual.  Tried apache openoffice.  
+`--language=C++` generates the parser in C++  
+`--report=all` generates a report of the language; could be useful for debugging the language  
+`-d` produces a header file

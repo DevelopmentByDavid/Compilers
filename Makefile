@@ -1,13 +1,24 @@
+# all: mini_l
+
+# mini_l.tab.cc mini_l.tab.hh:	mini_l.y
+# 	bison -v -d --language=c++ mini_l.y
+
+# lex.yy.cc: mini_l.l mini_l.tab.hh
+# 	flex++ mini_l.l
+
+# mini_l: lex.yy.cc mini_l.tab.cc mini_l.tab.hh
+# 	g++ -o mini_l mini_l.tab.cc lex.yy.cc -lfl -v
+
+# clean:
+# 	rm stack.hh mini_l.tab.cc lex.yy.cc mini_l.tab.hh mini_l.output
+
 all: mini_l
 
-mini_l.tab.c mini_l.tab.h:	mini_l.y
-	bison -v -d mini_l.y
-
-lex.yy.c: mini_l.l mini_l.tab.h
+flex: mini_l.l
 	flex mini_l.l
 
-mini_l: lex.yy.c mini_l.tab.c mini_l.tab.h
-	gcc -o mini_l mini_l.tab.c lex.yy.c -ll -v
+mini_l: flex
+	g++ -o mini_l lex.yy.c main.cc
 
 clean:
-	rm mini_l mini_l.tab.c lex.yy.c mini_l.tab.h
+	rm *.o lex.yy.c 

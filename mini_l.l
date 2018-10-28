@@ -2,10 +2,10 @@
    /* mini-l phase 1 */
    /*commented out code for now*/
   
-
+%option noyywrap
 %{   
-   int currLine = 1, currPos = 1;
-
+    // #include "y.tab.hh"
+    int currLine = 1, currPos = 1;
 %}
 
 DIGIT       [0-9]
@@ -82,7 +82,11 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 
 %%
 
-int main(int argc, char ** argv)
-{
-   yylex();
-}
+// int main(int argc, char ** argv)
+// {
+//     yylex();
+// //    FlexLexer* lexer = new yyFlexLexer;
+// //     while(lexer->yylex() != 0)
+// //         ;
+// //     return 0;
+// }
