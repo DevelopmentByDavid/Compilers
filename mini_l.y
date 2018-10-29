@@ -73,6 +73,8 @@
 %token  COMMA
 %token  NUMBER
 
+// %printer {fprintf(yyoutput, "'%c'", $$); } <char_pointer>
+
 
 %right      ASSIGN
 %left       OR
@@ -224,5 +226,6 @@ vars:               /* empty */                 {printf("vars -> epsilon\n");}
 // }
 
 void yyerror(const char *msg) {
-   printf("** Line %d, position %d: %s\n", currLine, currPos, msg);
+    // printf("%s\n", yychar);
+    printf("** Line %d, position %d: %s\n", currLine, currPos, msg);
 }
