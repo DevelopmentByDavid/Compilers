@@ -1,9 +1,10 @@
  /* cs152-fall18 */
    /* mini-l phase 1 */
    /*commented out code for now*/
-   
+%option noyywrap
 %{
     #include "mini_l.tab.h"
+    #include "header.h"
     int currLine = 1, currPos = 1;
 %}
 

@@ -5,8 +5,10 @@
  
  extern int currLine;
  extern int currPos;
+ extern char* yytext;     // defined and maintained in lex.c
  extern int yylex();
- extern void yyerror();
+ extern void yyerror(char *);
+ extern void yyerror(string);
 %}
 
 %union {
@@ -211,21 +213,13 @@ vars:               /* empty */                 {printf("vars -> epsilon\n");}
 
 %%
 
-// int main(int argc, char **argv) {
-//     // extern char* yytext;    //defined and maintained in lex.c
-//     // if (argc > 1) {
-//     //     yyin = fopen(argv[1], "r\n");
-//     //     if (yyin == NULL){
-//     //         printf("syntax: %s filename\n", argv[0]);
-//     //     }//end if
-//     // }//end if
-    // yyparse(); // Calls yylex() for tokens.
-//     // //where do I get s from?
-//     // cerr << "ERROR:" + s + " at symbol " + yytext + " on line ";
-//     return 0;
-// }
 
-void yyerror(const char *msg) {
-    // printf("%s\n", yychar);
-    printf("** Line %d, position %d: %s\n", currLine, currPos, msg);
+void yyerror( string s ) {  // error handler routine
+  extern int  yylineno;    // defined and maintained in lex.c
+  extern char* yytext;     // defined and maintained in lex.c
+  cerr << "ERROR: " << s << " at symbol \"" << yytext;
+  cerr << "\" on line " << currLine << " column " << currPos << endl;
+  exit( 1 );
 }
+
+void yyerror( char* s ) { yyerror( string(s) ); }
