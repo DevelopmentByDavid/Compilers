@@ -93,7 +93,7 @@
 %left       MOD
 %left       DIV
 %left       MULT
-%nonassoc   UMINUS
+%right      UMINUS
 %left       L_SQUARE_BRACKET
 %left       R_SQUARE_BRACKET
 %left       L_PAREN
@@ -194,13 +194,14 @@ terms:              /* empty */             {printf("terms -> epsilon\n");}
 multiplicative_expr:        term terms      {printf("multiplicative_expr -> term terms\n");}
                         ;
 
-term:               IDENT L_PAREN expressions R_PAREN   {printf("term -> IDENT L_PAREN expressions R_PAREN\n");}
-                |   NUMBER                              {printf("term -> NUMBER\n");}
-                |   var                                 {printf("term -> var\n");}
-                |   L_PAREN expression R_PAREN          {printf("term -> L_PAREN expression R_PAREN\n");}
-                |   SUB NUMBER                          {printf("term -> SUB NUMBER\n");}
-                |   SUB var                             {printf("term -> SUB var\n");}
-                |   SUB L_PAREN expression R_PAREN      {printf("term -> SUB L_PAREN expression R_PAREN\n");}
+term:               IDENT L_PAREN expressions R_PAREN         {printf("term -> IDENT L_PAREN expressions R_PAREN\n");}
+                |   NUMBER                                    {printf("term -> NUMBER\n");}
+                |   var                                       {printf("term -> var\n");}
+                |   L_PAREN expression R_PAREN                {printf("term -> L_PAREN expression R_PAREN\n");}
+                |   UMINUS NUMBER                             {printf("term -> UMINUS NUMBER\n");}
+                |   UMINUS var                                {printf("term -> UMINUS var\n");}
+                |   UMINUS L_PAREN expression R_PAREN         {printf("term -> UMINUS L_PAREN expression R_PAREN\n");}
+                |   UMINUS IDENT L_PAREN expressions R_PAREN  {printf("term -> UMINUS IDENT L_PAREN expressions R_PAREN\n");}
                 ;
 
 var:                IDENT                                                 {printf("var -> IDENT\n");}
