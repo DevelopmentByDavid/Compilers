@@ -1,9 +1,16 @@
 #include <stdio.h>
+#include "header.h"
+
+//for all variables
+#define VAR_PREFIX __temp__
+int VAR_COUNT = 0;
+stringstream k;
 
 
 extern int yylex(void);
 void yyparse();
 extern FILE* yyin;
+
 
 int main(int argc, char **argv) {
    if (argc > 1) {
@@ -16,3 +23,14 @@ int main(int argc, char **argv) {
    return 0;
 }
 
+void test(char *foo) {
+    cout << foo << endl;
+    cout << string(foo) << endl;
+    free(foo);
+}
+
+void funcName(char *name) {
+    k << string(name);
+    free(name);
+    cout << "func " << k.str() << endl;
+}

@@ -7,7 +7,7 @@ flex: mini_l.l
 	flex mini_l.l
 
 mini_l: bison flex
-	g++ -o compile lex.yy.c mini_l.tab.c main.c -g -ansi -Wno-write-strings
+	g++ -o compile lex.yy.c mini_l.tab.c main.cc -g -ansi -Wno-write-strings -std=c++11
 
 output: mini_l
 	cat mytest.min.txt | ./compile > rules.txt

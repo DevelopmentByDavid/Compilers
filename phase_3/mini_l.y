@@ -42,38 +42,38 @@
 %type <char_pointer> relation_and_expressions
 %type <char_pointer> expression_loop
 
-%token  FUNCTION
-%token  BEGIN_PARAMS
-%token  END_PARAMS
-%token  BEGIN_LOCALS
-%token  END_LOCALS
-%token  BEGIN_BODY
-%token  END_BODY
-%token  INTEGER
-%token  ARRAY
-%token  OF
-%token  IF
-%token  THEN
-%token  ENDIF
-%token  ELSE
-%token  WHILE
-%token  DO
-%token  BEGINLOOP
-%token  ENDLOOP
-%token  CONTINUE
-%token  READ
-%token  WRITE
-%token  AND
-%token  OR
-%token  NOT
-%token  TRUE
-%token  FALSE
-%token  RETURN
-%token  IDENT
-%token  COLON
-%token  SEMICOLON
-%token  COMMA
-%token  NUMBER
+%token <char_pointer> FUNCTION
+%token <char_pointer> BEGIN_PARAMS
+%token <char_pointer> END_PARAMS
+%token <char_pointer> BEGIN_LOCALS
+%token <char_pointer> END_LOCALS
+%token <char_pointer> BEGIN_BODY
+%token <char_pointer> END_BODY
+%token <char_pointer> INTEGER
+%token <char_pointer> ARRAY
+%token <char_pointer> OF
+%token <char_pointer> IF
+%token <char_pointer> THEN
+%token <char_pointer> ENDIF
+%token <char_pointer> ELSE
+%token <char_pointer> WHILE
+%token <char_pointer> DO
+%token <char_pointer> BEGINLOOP
+%token <char_pointer> ENDLOOP
+%token <char_pointer> CONTINUE
+%token <char_pointer> READ
+%token <char_pointer> WRITE
+%token <char_pointer> AND
+%token <char_pointer> OR
+%token <char_pointer> NOT
+%token <char_pointer> TRUE
+%token <char_pointer> FALSE
+%token <char_pointer> RETURN
+%token <char_pointer> IDENT
+%token <char_pointer> COLON
+%token <char_pointer> SEMICOLON
+%token <char_pointer> COMMA
+%token <char_pointer> NUMBER
 
 // %printer {fprintf(yyoutput, "'%c'", $$); } <char_pointer>
 
@@ -106,23 +106,30 @@ program:            functions                {printf("program -> functions\n");}
 		        ;
 
 functions:          /* empty */              {printf("functions -> epsilon\n");}
-                |   function functions       {printf("functions -> function functions\n");}
+                |   function functions       
+                        {
+                        // printf("functions -> function functions\n");
+                        }
                 ;
 
 function:           FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
-                    {printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");}
+                        {
+                            // printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");
+                            funcName($2);
+
+                        }
                 ;
 
 declarations:       /* empty */                         {printf("declarations -> epsilon\n");}
                 |   declaration SEMICOLON declarations  {printf("declarations -> declaration SEMICOLON declarations\n");}
                 ;
 
-declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   {printf("statements -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
-                |   IDENT idents COLON INTEGER                                                     {printf("statements -> IDENT idents COLON INTEGER\n");}
+declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   {printf("delcaration -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
+                |   IDENT idents COLON INTEGER                                                     {printf("declaration -> IDENT idents COLON INTEGER\n"); test($1);}
                 ;
 
 idents:             /* empty */         {printf("idents -> epsilon\n");}
-                |   COMMA IDENT idents  {printf("idents -> COMMA IDENT idents\n");}
+                |   COMMA IDENT idents  {printf("idents -> COMMA IDENT idents\n"); test($2);}
                 ;
 
 statements:         /* empty */                     {printf("statements -> epsilon\n");}
@@ -194,8 +201,8 @@ terms:              /* empty */             {printf("terms -> epsilon\n");}
 multiplicative_expr:        term terms      {printf("multiplicative_expr -> term terms\n");}
                         ;
 
-term:               IDENT L_PAREN expressions R_PAREN   {printf("term -> IDENT L_PAREN expressions R_PAREN\n");}
-                |   NUMBER                              {printf("term -> NUMBER\n");}
+term:               IDENT L_PAREN expressions R_PAREN   {printf("term -> IDENT L_PAREN expressions R_PAREN\n"); test($1);}
+                |   NUMBER                              {printf("term -> NUMBER\n"); test($1);}
                 |   var                                 {printf("term -> var\n");}
                 |   L_PAREN expression R_PAREN          {printf("term -> L_PAREN expression R_PAREN\n");}
                 |   SUB NUMBER                          {printf("term -> SUB NUMBER\n");}
@@ -203,7 +210,7 @@ term:               IDENT L_PAREN expressions R_PAREN   {printf("term -> IDENT L
                 |   SUB L_PAREN expression R_PAREN      {printf("term -> SUB L_PAREN expression R_PAREN\n");}
                 ;
 
-var:                IDENT                                                 {printf("var -> IDENT\n");}
+var:                IDENT                                                 {printf("var -> IDENT\n"); test($1);}
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    {printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
                 ;
 

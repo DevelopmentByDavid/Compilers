@@ -14,6 +14,9 @@ using namespace std;
 #include <sstream>
 #include <cassert>
 
+extern void test(char *);
+extern void funcName(char *);
+
 // define each macro
 
 inline string itoa( int x ) {  // converts an integer to a string.
