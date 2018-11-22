@@ -16,6 +16,9 @@ using namespace std;
 
 extern void test(char *);
 extern void funcName(char *);
+extern void scalarVar(char *);
+extern void print();
+extern void arrayVar(char *, char *);
 
 // define each macro
 

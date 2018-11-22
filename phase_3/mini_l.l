@@ -59,7 +59,7 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 ">="            {/*printf("GTE\n");*/ currPos+=yyleng; return GTE;}
 
 {IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ currPos+=yyleng; yylval.char_pointer = strdup(yytext); return IDENT;}
-{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; yylval.char_pointer = strdup(yytext); return NUMBER;}
+{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; /*yylval.char_pointer = strdup(yytext);*/ return NUMBER;}
 
 ";"             {/*printf("SEMICOLON\n");*/ currPos+=yyleng; return SEMICOLON;}
 ":"             {/*printf("COLON\n");*/ currPos+=yyleng; return COLON;}

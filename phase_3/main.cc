@@ -10,7 +10,7 @@ stringstream k;
 extern int yylex(void);
 void yyparse();
 extern FILE* yyin;
-
+int callCount = 0;
 
 int main(int argc, char **argv) {
    if (argc > 1) {
@@ -24,13 +24,34 @@ int main(int argc, char **argv) {
 }
 
 void test(char *foo) {
-    cout << foo << endl;
-    cout << string(foo) << endl;
+    //cout << foo << endl;
+    //cout << string(foo) << endl;
     free(foo);
 }
 
 void funcName(char *name) {
-    k << string(name);
+    k << "func " + string(name) + "\n";
     free(name);
-    cout << "func " << k.str() << endl;
+    //cout << "func " << k.str() << endl;
+}
+
+/*
+   var related functions below
+*/
+void scalarVar(char *arg) {
+   k << ". " + string(arg) + "\n";
+   free(arg);
+   // cout << k.str() << endl;
+}
+
+void arrayVar(char *name, char *size) { 
+   k << ". [ ]" << name << ", "<< size << "\n";
+   free(name);
+   // free(size);
+   callCount++;
+   cout << callCount << endl;
+}
+
+void print() {
+   cout << k.str() << endl;
 }
