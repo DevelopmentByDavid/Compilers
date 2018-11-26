@@ -1,0 +1,4 @@
+in print
+. k
+in print
+. k

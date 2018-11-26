@@ -3,7 +3,6 @@
    /*commented out code for now*/
 %option noyywrap
 %{
-    #include "mini_l.tab.h"
     #include "header.h"
     int currLine = 1, currPos = 1;
 %}
@@ -17,7 +16,7 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 
 {COMMENT}       {/*printf("COMMENT\n");*/ currPos += yyleng;}
 
-"function"      {/*printf("FUNCTION\n");*/ currPos += yyleng; yylval.char_pointer = strdup(yytext); return FUNCTION;}
+"function"      {/*printf("FUNCTION\n");*/ currPos += yyleng; yylval.myString = new string(yytext); return FUNCTION;}
 "beginparams"   {/*printf("BEGIN_PARAMS\n");*/ currPos+=yyleng; return BEGIN_PARAMS;}
 "endparams"     {/*printf("END_PARAMS\n");*/ currPos+=yyleng; return END_PARAMS;}
 "beginlocals"   {/*printf("BEGIN_LOCALS\n");*/ currPos += yyleng; return BEGIN_LOCALS;}
@@ -58,8 +57,8 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 "<="            {/*printf("LTE\n");*/ currPos += yyleng; return LTE;}
 ">="            {/*printf("GTE\n");*/ currPos+=yyleng; return GTE;}
 
-{IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ currPos+=yyleng; yylval.char_pointer = strdup(yytext); return IDENT;}
-{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; /*yylval.char_pointer = strdup(yytext);*/ return NUMBER;}
+{IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ currPos+=yyleng; yylval.myString = new string(yytext); return IDENT;}
+{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; yylval.myInt = atoi(yytext);return NUMBER;}
 
 ";"             {/*printf("SEMICOLON\n");*/ currPos+=yyleng; return SEMICOLON;}
 ":"             {/*printf("COLON\n");*/ currPos+=yyleng; return COLON;}

@@ -12,70 +12,71 @@
 %}
 
 %union {
-    char *char_pointer;
+    string *myString;
+    int myInt;
 }
 
 //start symbol
 %start program
 
-%type <char_pointer> program
-%type <char_pointer> functions
-%type <char_pointer> function
-%type <char_pointer> declaration
-%type <char_pointer> declarations
-%type <char_pointer> statement
-%type <char_pointer> statements
-%type <char_pointer> bool_expr
-%type <char_pointer> relation_and_expr
-%type <char_pointer> relation_expr
-%type <char_pointer> comp
-%type <char_pointer> expression
-%type <char_pointer> expressions
-%type <char_pointer> multiplicative_expr
-%type <char_pointer> terms
-%type <char_pointer> term
-%type <char_pointer> var
-%type <char_pointer> vars
-%type <char_pointer> idents
+%type <myString> program
+%type <myString> functions
+%type <myString> function
+%type <myString> declaration
+%type <myString> declarations
+%type <myString> statement
+%type <myString> statements
+%type <myString> bool_expr
+%type <myString> relation_and_expr
+%type <myString> relation_expr
+%type <myString> comp
+%type <myString> expression
+%type <myString> expressions
+%type <myString> multiplicative_expr
+%type <myString> terms
+%type <myString> term
+%type <myString> var
+%type <myString> vars
+%type <myString> idents
 
-%type <char_pointer> bool_expressions
-%type <char_pointer> relation_and_expressions
-%type <char_pointer> expression_loop
+%type <myString> bool_expressions
+%type <myString> relation_and_expressions
+%type <myString> expression_loop
 
-%token <char_pointer> FUNCTION
-%token <char_pointer> BEGIN_PARAMS
-%token <char_pointer> END_PARAMS
-%token <char_pointer> BEGIN_LOCALS
-%token <char_pointer> END_LOCALS
-%token <char_pointer> BEGIN_BODY
-%token <char_pointer> END_BODY
-%token <char_pointer> INTEGER
-%token <char_pointer> ARRAY
-%token <char_pointer> OF
-%token <char_pointer> IF
-%token <char_pointer> THEN
-%token <char_pointer> ENDIF
-%token <char_pointer> ELSE
-%token <char_pointer> WHILE
-%token <char_pointer> DO
-%token <char_pointer> BEGINLOOP
-%token <char_pointer> ENDLOOP
-%token <char_pointer> CONTINUE
-%token <char_pointer> READ
-%token <char_pointer> WRITE
-%token <char_pointer> AND
-%token <char_pointer> OR
-%token <char_pointer> NOT
-%token <char_pointer> TRUE
-%token <char_pointer> FALSE
-%token <char_pointer> RETURN
-%token <char_pointer> IDENT
-%token <char_pointer> COLON
-%token <char_pointer> SEMICOLON
-%token <char_pointer> COMMA
-%token <char_pointer> NUMBER
+%token <myString> FUNCTION
+%token <myString> BEGIN_PARAMS
+%token <myString> END_PARAMS
+%token <myString> BEGIN_LOCALS
+%token <myString> END_LOCALS
+%token <myString> BEGIN_BODY
+%token <myString> END_BODY
+%token <myString> INTEGER
+%token <myString> ARRAY
+%token <myString> OF
+%token <myString> IF
+%token <myString> THEN
+%token <myString> ENDIF
+%token <myString> ELSE
+%token <myString> WHILE
+%token <myString> DO
+%token <myString> BEGINLOOP
+%token <myString> ENDLOOP
+%token <myString> CONTINUE
+%token <myString> READ
+%token <myString> WRITE
+%token <myString> AND
+%token <myString> OR
+%token <myString> NOT
+%token <myString> TRUE
+%token <myString> FALSE
+%token <myString> RETURN
+%token <myString> IDENT
+%token <myString> COLON
+%token <myString> SEMICOLON
+%token <myString> COMMA
+%token <myString> NUMBER
 
-// %printer {f/*printf(yyoutput, "'%c'", $$); } <char_pointer>
+// %printer {f/*printf(yyoutput, "'%c'", $$); } <myString>
 
 
 %right      ASSIGN
@@ -102,30 +103,34 @@
 
 
 %% 
-program:            functions                {/*printf("program -> functions\n");*/print();} 
+program:            functions                {/*printf("program -> functions\n");*/} 
 		        ;
 
 functions:          /* empty */              {/*printf("functions -> epsilon\n");*/}
                 |   function functions       
                         {
                         // /*printf("functions -> function functions\n");*/
+                            // print($1);
                         }
                 ;
 
 function:           FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
                         {
-                            /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
-                            funcName($2);
-
+                            /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
+                            BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
+                            // funcName($2);
+                            print($5);
                         }
                 ;
 
 declarations:       /* empty */                         {/*printf("declarations -> epsilon\n");*/}
-                |   declaration SEMICOLON declarations  {/*printf("declarations -> declaration SEMICOLON declarations\n");*/}
+                |   declaration SEMICOLON declarations  {/*printf("declarations -> declaration SEMICOLON declarations\n");*/ $$ = $1;}
                 ;
 
-declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   {/*printf("delcaration -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");*/}
-                |   IDENT idents COLON INTEGER                                                     {/*printf("declaration -> IDENT idents COLON INTEGER\n");*/}
+declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   
+                        {/*printf("delcaration -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");*/}
+                |   IDENT idents COLON INTEGER                                                     
+                        {/*printf("declaration -> IDENT idents COLON INTEGER\n");*/ $$ = addTable($1);}
                 ;
 
 idents:             /* empty */         {/*printf("idents -> epsilon\n");*/}
@@ -136,15 +141,24 @@ statements:         /* empty */                     {/*printf("statements -> eps
                 |   statement SEMICOLON statements  {/*printf("statements -> statement SEMICOLON statements\n");*/}
                 ;
 
-statement:          var ASSIGN expression                                                                       {/*printf("statement -> var ASSIGN expression\n");*/}
-                |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      {/*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/ }
-                |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  {/*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");*/}
-                |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            {/*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/}
-                |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr                         {/*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ }
-                |   READ var vars                                                                               {/*printf("statement ->  READ var vars\n");*/ }
-                |   WRITE var vars                                                                              {/*printf("statement -> WRITE var vars\n");*/}
-                |   CONTINUE                                                                                    {/*printf("statement -> CONTINUE\n");*/}
-                |   RETURN expression                                                                           {/*printf("statement -> RETURN expression\n");*/}
+statement:          var ASSIGN expression                                                                       
+                        {/*printf("statement -> var ASSIGN expression\n");*/}
+                |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
+                        {/*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/ }
+                |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
+                        {/*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");*/}
+                |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
+                        {/*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/}
+                |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr                         
+                        {/*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ }
+                |   READ var vars                                                                               
+                        {/*printf("statement ->  READ var vars\n");*/}
+                |   WRITE var vars                                                                              
+                        {/*printf("statement -> WRITE var vars\n");*/}
+                |   CONTINUE                                                                                    
+                        {/*printf("statement -> CONTINUE\n");*/}
+                |   RETURN expression                                                                           
+                        {/*printf("statement -> RETURN expression\n");*/}
                 ;
 
 bool_expr:          relation_and_expr bool_expressions                 {/*printf("bool_expr -> relation_and_expr bool_expressions\n");*/}
@@ -210,8 +224,8 @@ term:               IDENT L_PAREN expressions R_PAREN   {/*printf("term -> IDENT
                 |   SUB L_PAREN expression R_PAREN      {/*printf("term -> SUB L_PAREN expression R_PAREN\n");*/}
                 ;
 
-var:                IDENT                                                 {/*printf("var -> IDENT\n");*/ scalarVar($1);}
-                |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    {/*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ arrayVar($1, $3);}
+var:                IDENT                                                 {/*printf("var -> IDENT\n");*/}
+                |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    {/*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ }
                 ;
 
 vars:               /* empty */                 {/*printf("vars -> epsilon\n");*/}
