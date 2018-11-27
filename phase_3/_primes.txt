@@ -1,0 +1,42 @@
+. n
+. [] a, 1000
+. j
+. i
+. sqrt_n
+. x
+= x, n
+. __temp__0
+= __temp__0, 2
+= x, x
+= sqrt_n, x
+. __temp__1
+= __temp__1, 2
+= i, __temp__1
+. __temp__2
+= __temp__2, 0
+= a, __temp__2
+. __temp__3
+= __temp__3, 1
+= i, i
+. __temp__4
+= __temp__4, 2
+= i, __temp__4
+. __temp__5
+= __temp__5, 0
+= j, i
+. __temp__6
+= __temp__6, 1
+= a, __temp__6
+= j, j
+. __temp__7
+= __temp__7, 1
+= i, i
+. __temp__8
+= __temp__8, 2
+= i, __temp__8
+. __temp__9
+= __temp__9, 0
+. __temp__10
+= __temp__10, 1
+= i, i
+func main

@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <cassert>
+#include <stdio.h>
 using namespace std;
 
 #include "mini_l.tab.h"
@@ -30,23 +31,8 @@ using namespace std;
 #define _MOD    12
 #define _DIV    13
 #define _MULT   14
+#define _GT    15
 
-// class node {
-//     protected:
-//         stringstream val;
-//     public:
-//         node() {}
-//         ~node() {}
-//         virtual string getVal() {return val.str();}
-// };
-
-// class fnNode: public node {
-//     public:
-//         fnNode(char *name) {
-//             val << string(name);
-//         }
-//         ~fnNode() {} 
-// };
 
 // struct quad {
 //     int op;
@@ -56,23 +42,11 @@ using namespace std;
 // };
 
 
-// extern void test(char *);
-extern void funcName(char *);
-// extern void scalarVar(char *);
-extern void print();
-extern void print(string *);
-// extern void arrayVar(char *, char *);
-// extern int inTable(string);
-// extern void addTable(string);
 extern string newTemp();
-extern string *addTable(string *);
+extern int addTable(string);
 extern int exist(string);
+extern void print();
+extern void func();
+extern void genCode(string );
 
 
-// define each macro
-
-inline string itoa( int x ) {  // converts an integer to a string.
-  ostringstream s;
-  s << x;
-  return s.str();
-}

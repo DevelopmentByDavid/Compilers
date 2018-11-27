@@ -1,10 +1,16 @@
-#include <stdio.h>
 #include "header.h"
 
 //for all variables
 #define VAR_PREFIX "__temp__"
 int VAR_COUNT = 0;
-stringstream k;
+
+//forward decl
+struct fn;
+
+//global symbol table
+list<std::string> SYMBOLTABLE;
+list<std::string> CODE;
+list<fn> FUNCTIONS;
 
 //yy stuff declarations
 extern int yylex(void);
@@ -13,9 +19,12 @@ extern int yyparse();
 //file related stuff
 extern FILE* yyin;
 
-//global symbol table stuff
-string symbolTable[250];
-int symbolIndex = 0;
+
+struct fn {
+    list<std::string> code;
+    list<std::string> symbolTable;
+};
+
 
 //begin main
 int main(int argc, char **argv) {
@@ -30,31 +39,51 @@ int main(int argc, char **argv) {
 }
 
 int exist(string toCheck) {
-    for (int i = 0; i < symbolIndex; i++) {
-        if (symbolTable[i].compare(toCheck) == 0) {
-            return 1;
-        }
+    for (list<string>::iterator it = SYMBOLTABLE.begin(); it != SYMBOLTABLE.end(); ++it){
+        if (toCheck.compare(*it) == 0) return 1;
     }
     return 0;
 }
 
-string *addTable(string *toAdd) {
-    *toAdd = ". " + *toAdd;
-    // string foo = *toAdd;
-    if (!exist(*toAdd)) {
-        symbolTable[symbolIndex] = *toAdd;
-        symbolIndex++;
+int addTable(string toAdd) {
+    if (!exist(toAdd)) {
+        SYMBOLTABLE.push_front(toAdd);
+        return 1;
     }
-    // cout << string(toAdd) << endl;
-    // free(toAdd);
-    return toAdd;
+    return 0;
 }
+
+void print() {
+    for (list<fn>::iterator it = FUNCTIONS.begin(); it != FUNCTIONS.end(); ++it){
+        for (list<string>::iterator itt = it->code.begin(); itt != it->code.end(); ++itt) {
+            cout << *itt << endl;
+        }
+    }
+}
+
+void func() {
+    //push current stuff into the new fn
+    fn temp;
+    temp.code = CODE;
+    temp.symbolTable = SYMBOLTABLE;
+    FUNCTIONS.push_back(temp);
+
+    //clear current
+    CODE  = list<string>();
+    SYMBOLTABLE = list<string>();
+}
+
+void genCode(string code) {
+    CODE.push_back(code);
+} 
 
 string newTemp() {
     stringstream temp;
     temp << VAR_PREFIX;
     temp << VAR_COUNT;
     VAR_COUNT++;
+    addTable(temp.str());
+    genCode(". " + temp.str());
     return temp.str();
 }
 
@@ -72,16 +101,6 @@ string newTemp() {
 //     }
 //     return 0;
 // }
-
-
-void funcName(char *name) {
-    string temp = "func " + string(name);
-    symbolTable[symbolIndex] = temp;
-    symbolIndex++;
-    // k << "func " + string(name) + "\n";
-    free(name);
-    
-}
 
 // /*
 //    var related functions below
@@ -105,14 +124,3 @@ void funcName(char *name) {
 //     free(name);
 //     // free(size);
 // }
-
-void print() {
-    for (int i = 0; i < symbolIndex; i++) {
-        cout << symbolTable[i] << endl;
-    }
-//    cout << k.str() << endl;
-}
-
-void print(string *foo) {
-    cout << *foo << endl;
-}
