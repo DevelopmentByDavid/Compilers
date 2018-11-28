@@ -540,12 +540,12 @@ static const yytype_int8 yyrhs[] =
 static const yytype_uint16 yyrline[] =
 {
        0,   105,   105,   112,   113,   119,   131,   132,   135,   142,
-     151,   152,   161,   162,   165,   174,   178,   182,   186,   190,
-     194,   198,   202,   208,   215,   218,   224,   231,   234,   239,
-     257,   258,   259,   260,   261,   262,   263,   266,   267,   268,
-     269,   270,   271,   274,   281,   282,   283,   287,   288,   289,
-     292,   293,   294,   295,   298,   305,   311,   319,   324,   329,
-     333,   337,   343,   348,   355,   356
+     151,   152,   161,   162,   165,   175,   179,   183,   187,   191,
+     195,   199,   203,   209,   216,   219,   225,   232,   235,   240,
+     258,   259,   260,   261,   262,   263,   264,   267,   268,   269,
+     270,   271,   272,   275,   297,   301,   307,   316,   317,   318,
+     321,   322,   323,   324,   327,   334,   340,   348,   353,   358,
+     362,   366,   372,   377,   384,   385
 };
 #endif
 
@@ -1645,111 +1645,112 @@ yyreduce:
                             if (exist(*((yyvsp[(1) - (3)].myString))) && exist(*((yyvsp[(3) - (3)].myString)))) {
                                 genCode("= " + *((yyvsp[(1) - (3)].myString)) + ", " + *((yyvsp[(3) - (3)].myString)));
                             } else {
-                                
+                                string code = *((yyvsp[(3) - (3)].myString));
+                                genCode(code.insert(1, " " + *((yyvsp[(1) - (3)].myString))));
                             }
                         ;}
     break;
 
   case 15:
-#line 175 "mini_l.y"
+#line 176 "mini_l.y"
     {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/ 
                         ;}
     break;
 
   case 16:
-#line 179 "mini_l.y"
+#line 180 "mini_l.y"
     {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");*/
                         ;}
     break;
 
   case 17:
-#line 183 "mini_l.y"
+#line 184 "mini_l.y"
     {
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
                         ;}
     break;
 
   case 18:
-#line 187 "mini_l.y"
+#line 188 "mini_l.y"
     {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
                         ;}
     break;
 
   case 19:
-#line 191 "mini_l.y"
+#line 192 "mini_l.y"
     {
                             /*printf("statement ->  READ var vars\n");*/
                         ;}
     break;
 
   case 20:
-#line 195 "mini_l.y"
+#line 196 "mini_l.y"
     {
                             /*printf("statement -> WRITE var vars\n");*/
                         ;}
     break;
 
   case 21:
-#line 199 "mini_l.y"
+#line 200 "mini_l.y"
     {
                             /*printf("statement -> CONTINUE\n");*/
                         ;}
     break;
 
   case 22:
-#line 203 "mini_l.y"
+#line 204 "mini_l.y"
     {
                             /*printf("statement -> RETURN expression\n");*/
                         ;}
     break;
 
   case 23:
-#line 209 "mini_l.y"
+#line 210 "mini_l.y"
     {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
                         ;}
     break;
 
   case 24:
-#line 215 "mini_l.y"
+#line 216 "mini_l.y"
     {
                             /*printf("bool_expressions -> epsilon\n");*/
                         ;}
     break;
 
   case 25:
-#line 219 "mini_l.y"
+#line 220 "mini_l.y"
     {
                             /*printf("bool_expressions -> OR relation_and_expr bool_expressions\n");*/
                         ;}
     break;
 
   case 26:
-#line 225 "mini_l.y"
+#line 226 "mini_l.y"
     {
                                 /*printf("relation_and_expr -> relation_expr relation_and_expressions\n");*/
                             ;}
     break;
 
   case 27:
-#line 231 "mini_l.y"
+#line 232 "mini_l.y"
     {
                                     /*printf("relation_and_expressions -> epsilon\n");*/
                                 ;}
     break;
 
   case 28:
-#line 235 "mini_l.y"
+#line 236 "mini_l.y"
     {
                                     /*printf("relation_and_expressions -> AND relation_expr relation_and_expressions\n");*/
                                 ;}
     break;
 
   case 29:
-#line 240 "mini_l.y"
+#line 241 "mini_l.y"
     {
                                     /*printf("relation_expr -> expression comp expression\n");*/
                                     //MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
@@ -1770,130 +1771,155 @@ yyreduce:
     break;
 
   case 30:
-#line 257 "mini_l.y"
+#line 258 "mini_l.y"
     {/*printf("relation_expr -> TRUE\n");*/;}
     break;
 
   case 31:
-#line 258 "mini_l.y"
+#line 259 "mini_l.y"
     {/*printf("relation_expr -> FALSE\n");*/;}
     break;
 
   case 32:
-#line 259 "mini_l.y"
+#line 260 "mini_l.y"
     {/*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/;}
     break;
 
   case 33:
-#line 260 "mini_l.y"
+#line 261 "mini_l.y"
     {/*printf("relation_expr -> NOT expression comp expression\n");*/;}
     break;
 
   case 34:
-#line 261 "mini_l.y"
+#line 262 "mini_l.y"
     {/*printf("relation_expr -> NOT TRUE\n");*/;}
     break;
 
   case 35:
-#line 262 "mini_l.y"
+#line 263 "mini_l.y"
     {/*printf("relation_expr -> NOT FALSE\n");*/;}
     break;
 
   case 36:
-#line 263 "mini_l.y"
+#line 264 "mini_l.y"
     {/*printf("relation_expr -> NOT L_PAREN bool_expr R_PAREN\n");*/;}
     break;
 
   case 37:
-#line 266 "mini_l.y"
+#line 267 "mini_l.y"
     {/*printf("comp -> EQ\n");*/ (yyval.myInt) = _EQ;;}
     break;
 
   case 38:
-#line 267 "mini_l.y"
+#line 268 "mini_l.y"
     {/*printf("comp -> NEQ\n");*/ (yyval.myInt) =_NEQ;;}
     break;
 
   case 39:
-#line 268 "mini_l.y"
+#line 269 "mini_l.y"
     {/*printf("comp -> LT\n");*/ (yyval.myInt) = _LT;;}
     break;
 
   case 40:
-#line 269 "mini_l.y"
+#line 270 "mini_l.y"
     {/*printf("comp -> GT\n");*/ (yyval.myInt) = _GT;;}
     break;
 
   case 41:
-#line 270 "mini_l.y"
+#line 271 "mini_l.y"
     {/*printf("comp -> LTE\n");*/ (yyval.myInt) = _LTE;;}
     break;
 
   case 42:
-#line 271 "mini_l.y"
+#line 272 "mini_l.y"
     {/*printf("comp -> GTE\n");*/ (yyval.myInt) = _GTE;;}
     break;
 
   case 43:
-#line 275 "mini_l.y"
+#line 276 "mini_l.y"
     {
                             /*printf("expression -> multiplicative_expr expression_loop\n");*/
                             (yyval.myString) = (yyvsp[(1) - (2)].myString);
+
+                            //if the multiplicative_expr isn't just something like a number
+                            if (((yyvsp[(2) - (2)].myString))->compare("") != 0) {
+                                //local vars
+                                // string temp = newTemp();
+                                string code = *((yyvsp[(2) - (2)].myString));
+                                //only applies to local code
+                                code.insert(1, ", " + *((yyvsp[(1) - (2)].myString)));
+                                //add a new temporary into the table to store stuff
+                                // addTable(temp);
+                                // genCode(code);
+                                //"return" code
+                                (yyval.myString) = new string(code);
+                            }
                         ;}
     break;
 
   case 44:
-#line 281 "mini_l.y"
-    {/*printf("expression_loop -> epsilon\n");*/ (yyval.myString) = new string("");;}
+#line 297 "mini_l.y"
+    {
+                            /*printf("expression_loop -> epsilon\n");*/
+                            (yyval.myString) = new string("");
+                        ;}
     break;
 
   case 45:
-#line 282 "mini_l.y"
-    {/*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/;}
+#line 302 "mini_l.y"
+    {
+                            /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
+                            string temp = (string) "+" +  (string) ", " + *((yyvsp[(2) - (3)].myString));
+                            (yyval.myString) = new string(temp);
+                        ;}
     break;
 
   case 46:
-#line 283 "mini_l.y"
-    {/*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/;}
+#line 308 "mini_l.y"
+    {
+                            /*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/
+                            string temp = (string) "-" + (string) ", " + *((yyvsp[(2) - (3)].myString));
+                            (yyval.myString) = new string(temp);
+                        ;}
     break;
 
   case 47:
-#line 287 "mini_l.y"
+#line 316 "mini_l.y"
     {/*printf("expressions -> expression COMMA expressions\n");*/;}
     break;
 
   case 48:
-#line 288 "mini_l.y"
+#line 317 "mini_l.y"
     {/*printf("expressions -> expression\n");*/;}
     break;
 
   case 49:
-#line 289 "mini_l.y"
+#line 318 "mini_l.y"
     {/*printf("expressions -> epsilon\n");*/;}
     break;
 
   case 50:
-#line 292 "mini_l.y"
+#line 321 "mini_l.y"
     {/*printf("terms -> epsilon\n");*/;}
     break;
 
   case 51:
-#line 293 "mini_l.y"
+#line 322 "mini_l.y"
     {/*printf("terms -> MOD term terms\n");*/;}
     break;
 
   case 52:
-#line 294 "mini_l.y"
+#line 323 "mini_l.y"
     {/*printf("terms -> DIV term terms\n");*/;}
     break;
 
   case 53:
-#line 295 "mini_l.y"
+#line 324 "mini_l.y"
     {/*printf("terms -> MULT term terms\n");*/;}
     break;
 
   case 54:
-#line 299 "mini_l.y"
+#line 328 "mini_l.y"
     {
                                     /*printf("multiplicative_expr -> term terms\n");*/
                                     (yyval.myString) = (yyvsp[(1) - (2)].myString);
@@ -1901,7 +1927,7 @@ yyreduce:
     break;
 
   case 55:
-#line 306 "mini_l.y"
+#line 335 "mini_l.y"
     {
                             /*printf("term -> IDENT L_PAREN expressions R_PAREN\n");*/
                             (yyval.myString) = (yyvsp[(1) - (4)].myString);
@@ -1910,7 +1936,7 @@ yyreduce:
     break;
 
   case 56:
-#line 312 "mini_l.y"
+#line 341 "mini_l.y"
     {
                             /*printf("term -> NUMBER\n");*/
                             string temp = newTemp();
@@ -1921,7 +1947,7 @@ yyreduce:
     break;
 
   case 57:
-#line 320 "mini_l.y"
+#line 349 "mini_l.y"
     {
                             /*printf("term -> var\n");*/
                             (yyval.myString) = (yyvsp[(1) - (1)].myString);
@@ -1929,7 +1955,7 @@ yyreduce:
     break;
 
   case 58:
-#line 325 "mini_l.y"
+#line 354 "mini_l.y"
     {
                             /*printf("term -> L_PAREN expression R_PAREN\n");*/
                             (yyval.myString) = (yyvsp[(2) - (3)].myString);
@@ -1937,28 +1963,28 @@ yyreduce:
     break;
 
   case 59:
-#line 330 "mini_l.y"
+#line 359 "mini_l.y"
     {
                             /*printf("term -> SUB NUMBER\n");*/
                         ;}
     break;
 
   case 60:
-#line 334 "mini_l.y"
+#line 363 "mini_l.y"
     {
                             /*printf("term -> SUB var\n");*/
                         ;}
     break;
 
   case 61:
-#line 338 "mini_l.y"
+#line 367 "mini_l.y"
     {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
                         ;}
     break;
 
   case 62:
-#line 344 "mini_l.y"
+#line 373 "mini_l.y"
     {
                             /*printf("var -> IDENT\n");*/
                             (yyval.myString) = (yyvsp[(1) - (1)].myString);
@@ -1966,7 +1992,7 @@ yyreduce:
     break;
 
   case 63:
-#line 349 "mini_l.y"
+#line 378 "mini_l.y"
     {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
                             (yyval.myString) = (yyvsp[(1) - (4)].myString);
@@ -1974,12 +2000,12 @@ yyreduce:
     break;
 
   case 64:
-#line 355 "mini_l.y"
+#line 384 "mini_l.y"
     {/*printf("vars -> epsilon\n");*/;}
     break;
 
   case 65:
-#line 357 "mini_l.y"
+#line 386 "mini_l.y"
     {
                         /*printf("vars -> COMMA var vars \n");*/
                         (yyval.myString) = (yyvsp[(2) - (3)].myString);
@@ -1988,7 +2014,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 1992 "mini_l.tab.c"
+#line 2018 "mini_l.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2202,7 +2228,7 @@ yyreturn:
 }
 
 
-#line 363 "mini_l.y"
+#line 392 "mini_l.y"
 
 
 

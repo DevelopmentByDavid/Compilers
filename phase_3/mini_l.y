@@ -168,7 +168,8 @@ statement:          var ASSIGN expression
                             if (exist(*($1)) && exist(*($3))) {
                                 genCode("= " + *($1) + ", " + *($3));
                             } else {
-                                
+                                string code = *($3);
+                                genCode(code.insert(1, " " + *($1)));
                             }
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
@@ -275,12 +276,40 @@ expression:         multiplicative_expr expression_loop
                         {
                             /*printf("expression -> multiplicative_expr expression_loop\n");*/
                             $$ = $1;
+
+                            //if the multiplicative_expr isn't just something like a number
+                            if (($2)->compare("") != 0) {
+                                //local vars
+                                // string temp = newTemp();
+                                string code = *($2);
+                                //only applies to local code
+                                code.insert(1, ", " + *($1));
+                                //add a new temporary into the table to store stuff
+                                // addTable(temp);
+                                // genCode(code);
+                                //"return" code
+                                $$ = new string(code);
+                            }
                         }
                 ;
 
-expression_loop:    /* empty */                                 {/*printf("expression_loop -> epsilon\n");*/ $$ = new string("");}
-                |   ADD multiplicative_expr expression_loop     {/*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/}
-                |   SUB  multiplicative_expr expression_loop    {/*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/}
+expression_loop:    /* empty */                                 
+                        {
+                            /*printf("expression_loop -> epsilon\n");*/
+                            $$ = new string("");
+                        }
+                |   ADD multiplicative_expr expression_loop     
+                        {
+                            /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
+                            string temp = (string) "+" +  (string) ", " + *($2);
+                            $$ = new string(temp);
+                        }
+                |   SUB  multiplicative_expr expression_loop    
+                        {
+                            /*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/
+                            string temp = (string) "-" + (string) ", " + *($2);
+                            $$ = new string(temp);
+                        }
                 ;
 
 

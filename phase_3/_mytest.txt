@@ -12,7 +12,7 @@
 = t, k
 . __temp__2
 = __temp__2, 1
-= k, k
++ k, k, __temp__2
 . __temp__3
 = __temp__3, 2
 . __temp__4
@@ -34,10 +34,10 @@
 = __temp__9, 1
 . __temp__10
 = __temp__10, 3
-= k, __temp__9
++ k, __temp__9, i
 . __temp__11
 = __temp__11, 1
-= i, i
+- i, i, __temp__11
 . __temp__12
 = __temp__12, 1
 . __temp__13

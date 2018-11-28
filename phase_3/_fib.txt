@@ -10,4 +10,5 @@
 func fibonacci
 . n
 . fib_n
+f fib_nibonacci
 func main
