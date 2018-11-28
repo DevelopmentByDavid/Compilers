@@ -299,8 +299,18 @@ expression_loop:    /* empty */
                 |   ADD multiplicative_expr expression_loop     
                         {
                             /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
-                            string temp = (string) "+" +  (string) ", " + *($2);
-                            $$ = new string(temp);
+
+                            //always "return" $2 code
+                            string code = (string) "+" +  (string) ", " + *($2);
+                            $$ = new string(code);
+
+                            //loop handler
+                            if (($3)->compare("") != 0) {
+                                string temp = newTemp();
+                                string code_temp = *($3);
+                                code_temp.insert(1, " " + temp);
+                                genCode(code_temp);
+                            }
                         }
                 |   SUB  multiplicative_expr expression_loop    
                         {
@@ -356,7 +366,14 @@ multiplicative_expr:        term terms
                                     /*printf("multiplicative_expr -> term terms\n");*/
                                     $$ = $1;
                                     if (($2)->compare("") != 0) {
-                                        
+                                        //local var
+                                        string code = *($2);
+
+                                        //inserting code
+                                        code.insert(1, ", " + *($1));
+
+                                        //"return" statement
+                                        $$ = new string(code);
                                     }
                                 }
                         ;
