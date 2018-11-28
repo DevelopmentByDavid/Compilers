@@ -1,5 +1,7 @@
 // -*- c++ -*- 
 // heading.H
+
+#pragma once //ALSO SOMEWHAT NECESSARY; MAKES LIFE EASIER
 #include <iostream>
 #include <string>
 #include <map>
@@ -10,7 +12,6 @@
 #include <stdio.h>
 using namespace std;
 
-#include "mini_l.tab.h"
 
 
 // The following line suppresses an unused-function warning.
@@ -33,20 +34,22 @@ using namespace std;
 #define _MULT   14
 #define _GT    15
 
-
-// struct quad {
-//     int op;
-//     node *src1;
-//     node *src2;
-//     node *dest;
-// };
-
+struct arr_struct {
+    string src;
+    string dest;
+    string index;
+};
 
 extern string newTemp();
 extern int addTable(string);
 extern int exist(string);
 extern void print();
-extern void func();
+extern void func(string);
 extern void genCode(string );
+extern void undeclared(string);
+
+//THIS MUST BE INCLUDED LAST FOR STUFF TO WORK
+//IT'S ANNOYING BUT NECESSARY
+#include "mini_l.tab.h"
 
 

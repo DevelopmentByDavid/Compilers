@@ -1,3 +1,4 @@
+func fibonacci
 . k
 . __temp__0
 = __temp__0, 1
@@ -6,9 +7,14 @@
 . __temp__2
 = __temp__2, 1
 . __temp__3
-= __temp__3, 2
-func fibonacci
+[]= __temp__3, -, k, __temp__2, fibonacci
+. __temp__4
+= __temp__4, 2
+. __temp__5
+[]= __temp__5, -, k, __temp__4, fibonacci
+func main
 . n
 . fib_n
-f fib_nibonacci
-func main
+. __temp__6
+[]= __temp__6, n, fibonacci
+= fib_n, __temp__6

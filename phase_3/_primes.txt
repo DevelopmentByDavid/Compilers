@@ -1,3 +1,4 @@
+func main
 . n
 . [] a, 1000
 . j
@@ -7,36 +8,37 @@
 = x, n
 . __temp__0
 = __temp__0, 2
-/ x, +, x, /, n, x, __temp__0
 = sqrt_n, x
 . __temp__1
 = __temp__1, 2
 = i, __temp__1
 . __temp__2
-= __temp__2, 0
-= a, __temp__2
+__temp__2, a, i
 . __temp__3
-= __temp__3, 1
-+ i, i, __temp__3
+= __temp__3, 0
+= __temp__2, __temp__3
 . __temp__4
-= __temp__4, 2
-= i, __temp__4
+= __temp__4, 1
 . __temp__5
-= __temp__5, 0
-+ j, i, i
+= __temp__5, 2
+= i, __temp__5
 . __temp__6
-= __temp__6, 1
-= a, __temp__6
-+ j, j, i
+__temp__6, a, i
 . __temp__7
-= __temp__7, 1
-+ i, i, __temp__7
+= __temp__7, 0
 . __temp__8
-= __temp__8, 2
-= i, __temp__8
+__temp__8, a, j
 . __temp__9
-= __temp__9, 0
+= __temp__9, 1
+= __temp__8, __temp__9
 . __temp__10
 = __temp__10, 1
-+ i, i, __temp__10
-func main
+. __temp__11
+= __temp__11, 2
+= i, __temp__11
+. __temp__12
+__temp__12, a, i
+. __temp__13
+= __temp__13, 0
+. __temp__14
+= __temp__14, 1

@@ -15,10 +15,11 @@ endparams
 beginlocals
 
 n : integer;
+t : array [20] of integer;
 
 endlocals
 
 beginbody	## main program
-    n := 2 + 2 + 2 + 2;
-    n := 1 - 1;
+    t[2] := n;
+    n := t[2];
 endbody

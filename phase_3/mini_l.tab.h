@@ -150,9 +150,10 @@ typedef union YYSTYPE
 {
     string *myString;
     int myInt;
+    arr_struct *my_arr_struct;
 }
 /* Line 1529 of yacc.c.  */
-#line 156 "mini_l.tab.h"
+#line 157 "mini_l.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

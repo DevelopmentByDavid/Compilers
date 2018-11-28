@@ -1,20 +1,13 @@
+func main
 . n
+. [] t, 20
 . __temp__0
 = __temp__0, 2
 . __temp__1
-= __temp__1, 2
+__temp__1, t, __temp__0
+= __temp__1, n
 . __temp__2
 = __temp__2, 2
 . __temp__3
-= __temp__3, 2
-. __temp__4
-+ __temp__4, __temp__2, __temp__3
-. __temp__5
-+ __temp__5, __temp__1, __temp__4
-+ n, __temp__0, __temp__5
-. __temp__6
-= __temp__6, 1
-. __temp__7
-= __temp__7, 1
-- n, __temp__6, __temp__7
-func main
+__temp__3, t, __temp__2
+= n, __temp__3
