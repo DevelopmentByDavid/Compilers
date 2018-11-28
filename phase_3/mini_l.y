@@ -280,13 +280,11 @@ expression:         multiplicative_expr expression_loop
                             //if the multiplicative_expr isn't just something like a number
                             if (($2)->compare("") != 0) {
                                 //local vars
-                                // string temp = newTemp();
                                 string code = *($2);
+
                                 //only applies to local code
                                 code.insert(1, ", " + *($1));
-                                //add a new temporary into the table to store stuff
-                                // addTable(temp);
-                                // genCode(code);
+
                                 //"return" code
                                 $$ = new string(code);
                             }
@@ -313,21 +311,53 @@ expression_loop:    /* empty */
                 ;
 
 
-expressions:        expression COMMA expressions    {/*printf("expressions -> expression COMMA expressions\n");*/}
-                |   expression                      {/*printf("expressions -> expression\n");*/}
-                |   /* empty */                     {/*printf("expressions -> epsilon\n");*/}
+expressions:        expression COMMA expressions    
+                        {
+                            /*printf("expressions -> expression COMMA expressions\n");*/
+                        }
+                |   expression                      
+                        {
+                            /*printf("expressions -> expression\n");*/
+                            $$ = $1;
+                        }
+                |   /* empty */                     
+                        {
+                            /*printf("expressions -> epsilon\n");*/
+                        }
                 ;
 
-terms:              /* empty */             {/*printf("terms -> epsilon\n");*/}
-                |   MOD term terms          {/*printf("terms -> MOD term terms\n");*/}
-                |   DIV term terms          {/*printf("terms -> DIV term terms\n");*/}
-                |   MULT term terms         {/*printf("terms -> MULT term terms\n");*/}
+terms:              /* empty */             
+                        {
+                            /*printf("terms -> epsilon\n");*/
+                            $$ = new string("");
+                        }
+                |   MOD term terms          
+                        {
+                            /*printf("terms -> MOD term terms\n");*/
+                            string temp = (string) "%" + (string) ", " + *($2);
+                            $$ = new string(temp);
+                        }
+                |   DIV term terms          
+                        {
+                            /*printf("terms -> DIV term terms\n");*/
+                            string temp = (string) "/" + (string) ", " + *($2);
+                            $$ = new string(temp);
+                        }
+                |   MULT term terms         
+                        {
+                            /*printf("terms -> MULT term terms\n");*/
+                            string temp = (string) "*" + (string) ", " + *($2);
+                            $$ = new string(temp);
+                        }
                 ;
 
 multiplicative_expr:        term terms      
                                 {
                                     /*printf("multiplicative_expr -> term terms\n");*/
                                     $$ = $1;
+                                    if (($2)->compare("") != 0) {
+                                        
+                                    }
                                 }
                         ;
 
@@ -358,14 +388,21 @@ term:               IDENT L_PAREN expressions R_PAREN
                 |   SUB NUMBER                          
                         {
                             /*printf("term -> SUB NUMBER\n");*/
+
+                            //have to static cast cause compiler optimizes to char* or something
+                            $$ = new string( (string) "-" + *($2) );
                         }
                 |   SUB var                             
                         {
                             /*printf("term -> SUB var\n");*/
+
+                             $$ = new string( (string) "-" + *($2) );
                         }
                 |   SUB L_PAREN expression R_PAREN      
                         {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
+
+                             $$ = new string( (string) "-" + *($3) );
                         }
                 ;
 
