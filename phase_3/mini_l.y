@@ -300,16 +300,24 @@ expression_loop:    /* empty */
                         {
                             /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
 
-                            //always "return" $2 code
-                            string code = (string) "+" +  (string) ", " + *($2);
-                            $$ = new string(code);
+                            //declare base string to "return"
+                            string base = (string) "+" +  (string) ", ";
 
-                            //loop handler
-                            if (($3)->compare("") != 0) {
+                            if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                                //store addition result into generated temp
                                 string temp = newTemp();
-                                string code_temp = *($3);
-                                code_temp.insert(1, " " + temp);
-                                genCode(code_temp);
+                                //code returned by the loop that is NOT empty
+                                string code = *($3);
+                                //need to add current $2 and $3 together and store in generated temp
+                                code.insert(1, " " + temp + ", " + *($2));
+                                //generate code
+                                genCode(code);
+                                //now "return" the base + temp
+                                //value of expression generated above is in the generated temp
+                                $$ = new string(base + temp);
+                            } else {                        //expression loop is epsilon
+                                //"return" base + $2
+                                $$ = new string(base + *($2));
                             }
                         }
                 |   SUB  multiplicative_expr expression_loop    

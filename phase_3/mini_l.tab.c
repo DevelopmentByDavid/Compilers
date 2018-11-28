@@ -543,9 +543,9 @@ static const yytype_uint16 yyrline[] =
      151,   152,   161,   162,   165,   175,   179,   183,   187,   191,
      195,   199,   203,   209,   216,   219,   225,   232,   235,   240,
      258,   259,   260,   261,   262,   263,   264,   267,   268,   269,
-     270,   271,   272,   275,   295,   299,   315,   324,   328,   334,
-     340,   344,   350,   356,   364,   381,   387,   395,   400,   405,
-     412,   418,   426,   431,   438,   439
+     270,   271,   272,   275,   295,   299,   323,   332,   336,   342,
+     348,   352,   358,   364,   372,   389,   395,   403,   408,   413,
+     420,   426,   434,   439,   446,   447
 };
 #endif
 
@@ -1868,22 +1868,30 @@ yyreduce:
     {
                             /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
 
-                            //always "return" $2 code
-                            string code = (string) "+" +  (string) ", " + *((yyvsp[(2) - (3)].myString));
-                            (yyval.myString) = new string(code);
+                            //declare base string to "return"
+                            string base = (string) "+" +  (string) ", ";
 
-                            //loop handler
-                            if (((yyvsp[(3) - (3)].myString))->compare("") != 0) {
+                            if (((yyvsp[(3) - (3)].myString))->compare("") != 0) {   //expression loop is not epsilon
+                                //store addition result into generated temp
                                 string temp = newTemp();
-                                string code_temp = *((yyvsp[(3) - (3)].myString));
-                                code_temp.insert(1, " " + temp);
-                                genCode(code_temp);
+                                //code returned by the loop that is NOT empty
+                                string code = *((yyvsp[(3) - (3)].myString));
+                                //need to add current $2 and $3 together and store in generated temp
+                                code.insert(1, " " + temp + ", " + *((yyvsp[(2) - (3)].myString)));
+                                //generate code
+                                genCode(code);
+                                //now "return" the base + temp
+                                //value of expression generated above is in the generated temp
+                                (yyval.myString) = new string(base + temp);
+                            } else {                        //expression loop is epsilon
+                                //"return" base + $2
+                                (yyval.myString) = new string(base + *((yyvsp[(2) - (3)].myString)));
                             }
                         ;}
     break;
 
   case 46:
-#line 316 "mini_l.y"
+#line 324 "mini_l.y"
     {
                             /*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/
                             string temp = (string) "-" + (string) ", " + *((yyvsp[(2) - (3)].myString));
@@ -1892,14 +1900,14 @@ yyreduce:
     break;
 
   case 47:
-#line 325 "mini_l.y"
+#line 333 "mini_l.y"
     {
                             /*printf("expressions -> expression COMMA expressions\n");*/
                         ;}
     break;
 
   case 48:
-#line 329 "mini_l.y"
+#line 337 "mini_l.y"
     {
                             /*printf("expressions -> expression\n");*/
                             (yyval.myString) = (yyvsp[(1) - (1)].myString);
@@ -1907,14 +1915,14 @@ yyreduce:
     break;
 
   case 49:
-#line 334 "mini_l.y"
+#line 342 "mini_l.y"
     {
                             /*printf("expressions -> epsilon\n");*/
                         ;}
     break;
 
   case 50:
-#line 340 "mini_l.y"
+#line 348 "mini_l.y"
     {
                             /*printf("terms -> epsilon\n");*/
                             (yyval.myString) = new string("");
@@ -1922,7 +1930,7 @@ yyreduce:
     break;
 
   case 51:
-#line 345 "mini_l.y"
+#line 353 "mini_l.y"
     {
                             /*printf("terms -> MOD term terms\n");*/
                             string temp = (string) "%" + (string) ", " + *((yyvsp[(2) - (3)].myString));
@@ -1931,7 +1939,7 @@ yyreduce:
     break;
 
   case 52:
-#line 351 "mini_l.y"
+#line 359 "mini_l.y"
     {
                             /*printf("terms -> DIV term terms\n");*/
                             string temp = (string) "/" + (string) ", " + *((yyvsp[(2) - (3)].myString));
@@ -1940,7 +1948,7 @@ yyreduce:
     break;
 
   case 53:
-#line 357 "mini_l.y"
+#line 365 "mini_l.y"
     {
                             /*printf("terms -> MULT term terms\n");*/
                             string temp = (string) "*" + (string) ", " + *((yyvsp[(2) - (3)].myString));
@@ -1949,7 +1957,7 @@ yyreduce:
     break;
 
   case 54:
-#line 365 "mini_l.y"
+#line 373 "mini_l.y"
     {
                                     /*printf("multiplicative_expr -> term terms\n");*/
                                     (yyval.myString) = (yyvsp[(1) - (2)].myString);
@@ -1967,7 +1975,7 @@ yyreduce:
     break;
 
   case 55:
-#line 382 "mini_l.y"
+#line 390 "mini_l.y"
     {
                             /*printf("term -> IDENT L_PAREN expressions R_PAREN\n");*/
                             (yyval.myString) = (yyvsp[(1) - (4)].myString);
@@ -1976,7 +1984,7 @@ yyreduce:
     break;
 
   case 56:
-#line 388 "mini_l.y"
+#line 396 "mini_l.y"
     {
                             /*printf("term -> NUMBER\n");*/
                             string temp = newTemp();
@@ -1987,7 +1995,7 @@ yyreduce:
     break;
 
   case 57:
-#line 396 "mini_l.y"
+#line 404 "mini_l.y"
     {
                             /*printf("term -> var\n");*/
                             (yyval.myString) = (yyvsp[(1) - (1)].myString);
@@ -1995,7 +2003,7 @@ yyreduce:
     break;
 
   case 58:
-#line 401 "mini_l.y"
+#line 409 "mini_l.y"
     {
                             /*printf("term -> L_PAREN expression R_PAREN\n");*/
                             (yyval.myString) = (yyvsp[(2) - (3)].myString);
@@ -2003,7 +2011,7 @@ yyreduce:
     break;
 
   case 59:
-#line 406 "mini_l.y"
+#line 414 "mini_l.y"
     {
                             /*printf("term -> SUB NUMBER\n");*/
 
@@ -2013,7 +2021,7 @@ yyreduce:
     break;
 
   case 60:
-#line 413 "mini_l.y"
+#line 421 "mini_l.y"
     {
                             /*printf("term -> SUB var\n");*/
 
@@ -2022,7 +2030,7 @@ yyreduce:
     break;
 
   case 61:
-#line 419 "mini_l.y"
+#line 427 "mini_l.y"
     {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
 
@@ -2031,7 +2039,7 @@ yyreduce:
     break;
 
   case 62:
-#line 427 "mini_l.y"
+#line 435 "mini_l.y"
     {
                             /*printf("var -> IDENT\n");*/
                             (yyval.myString) = (yyvsp[(1) - (1)].myString);
@@ -2039,7 +2047,7 @@ yyreduce:
     break;
 
   case 63:
-#line 432 "mini_l.y"
+#line 440 "mini_l.y"
     {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
                             (yyval.myString) = (yyvsp[(1) - (4)].myString);
@@ -2047,12 +2055,12 @@ yyreduce:
     break;
 
   case 64:
-#line 438 "mini_l.y"
+#line 446 "mini_l.y"
     {/*printf("vars -> epsilon\n");*/;}
     break;
 
   case 65:
-#line 440 "mini_l.y"
+#line 448 "mini_l.y"
     {
                         /*printf("vars -> COMMA var vars \n");*/
                         (yyval.myString) = (yyvsp[(2) - (3)].myString);
@@ -2061,7 +2069,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 2065 "mini_l.tab.c"
+#line 2073 "mini_l.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2275,7 +2283,7 @@ yyreturn:
 }
 
 
-#line 446 "mini_l.y"
+#line 454 "mini_l.y"
 
 
 

@@ -19,6 +19,6 @@ n : integer;
 endlocals
 
 beginbody	## main program
-    n := 2 + 2 + 2 + 2 + 2;
+    n := 2 + 2 + 2 + 2;
     n := 1 - 1;
 endbody

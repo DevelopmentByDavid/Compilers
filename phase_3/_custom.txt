@@ -8,17 +8,13 @@
 . __temp__3
 = __temp__3, 2
 . __temp__4
-= __temp__4, 2
++ __temp__4, __temp__2, __temp__3
 . __temp__5
-+ __temp__5, __temp__4
++ __temp__5, __temp__1, __temp__4
++ n, __temp__0, __temp__5
 . __temp__6
-+ __temp__6, __temp__3
+= __temp__6, 1
 . __temp__7
-+ __temp__7, __temp__2
-+ n, __temp__0, __temp__1
-. __temp__8
-= __temp__8, 1
-. __temp__9
-= __temp__9, 1
-- n, __temp__8, __temp__9
+= __temp__7, 1
+- n, __temp__6, __temp__7
 func main

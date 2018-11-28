@@ -33,10 +33,10 @@
 . __temp__9
 = __temp__9, 1
 . __temp__10
-- __temp__10, j
+- __temp__10, i, j
 . __temp__11
 = __temp__11, 3
-% k, +, __temp__9, i, __temp__11
+% k, +, __temp__9, __temp__10, __temp__11
 . __temp__12
 = __temp__12, 1
 - i, i, __temp__12
