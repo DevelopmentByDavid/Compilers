@@ -139,8 +139,16 @@ fnName:             FUNCTION IDENT
                         }
                 ;
 
-declarations:       /* empty */                         {/*printf("declarations -> epsilon\n");*/}
-                |   declaration SEMICOLON declarations  {/*printf("declarations -> declaration SEMICOLON declarations\n");*/}
+declarations:       /* empty */                         
+                        {
+                            /*printf("declarations -> epsilon\n");*/
+                            $$ = new string("");
+                        }
+                |   declaration SEMICOLON declarations  
+                        {
+                            /*printf("declarations -> declaration SEMICOLON declarations\n");*/
+                            $$ = new string("");
+                        }
                 ;
 
 declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   
@@ -169,8 +177,16 @@ idents:             /* empty */         {/*printf("idents -> epsilon\n");*/}
                         }
                 ;
 
-statements:         /* empty */                     {/*printf("statements -> epsilon\n");*/}
-                |   statement SEMICOLON statements  {/*printf("statements -> statement SEMICOLON statements\n");*/}
+statements:         /* empty */                     
+                        {
+                            /*printf("statements -> epsilon\n");*/
+                            $$ = new string("");
+                        }
+                |   statement SEMICOLON statements  
+                        {
+                            /*printf("statements -> statement SEMICOLON statements\n");*/
+                            $$ = $1;
+                        }
                 ;
 
 statement:          var ASSIGN expression                                                                       
@@ -206,7 +222,7 @@ statement:          var ASSIGN expression
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
-                            /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/ 
+                            /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
                         {
@@ -260,42 +276,101 @@ statement:          var ASSIGN expression
                 |   CONTINUE                                                                                    
                         {
                             /*printf("statement -> CONTINUE\n");*/
+                            //THIS WOULD BE A GOTO STATEMENT
                         }
                 |   RETURN expression                                                                           
                         {
                             /*printf("statement -> RETURN expression\n");*/
+                            genCode("ret " + *($2));
+                            // $$ = new string();
                         }
                 ;
 
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
+                            if (($2)->compare("") != 0) {           //if an bool_expression loop exists
+                                //local vars
+                                string code = *($2);
+                                string temp = newTemp();
+
+                                //only applies to local code
+                                code.insert(1, " " + temp + ", " + *($1));
+                                genCode(code);
+                                //"return" code
+                                $$ = new string(temp);
+                            } else {                        //if expression loop does not exist; i.e. just a number
+                                $$ = $1;
+                            }
                         }
                 ;
 
 bool_expressions:   /* empty */                                         
                         {
                             /*printf("bool_expressions -> epsilon\n");*/
+                            //MAY NOT NEED BELOW
+                            $$ = new string("");
                         }
                 |   OR relation_and_expr bool_expressions               
                         {
                             /*printf("bool_expressions -> OR relation_and_expr bool_expressions\n");*/
+
+                            //declare base string to "return"
+                            string base = (string) "||" +  (string) ", ";
+
+                            if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                                //store addition result into generated temp
+                                string temp = newTemp();
+                                //code returned by the loop that is NOT empty
+                                string code = *($3);
+                                //need to add current $2 and $3 together and store in generated temp
+                                code.insert(2, " " + temp + ", " + *($2));
+                                //generate code
+                                genCode(code);
+                                //now "return" the base + temp
+                                //value of expression generated above is in the generated temp
+                                $$ = new string(base + temp);
+                            } else {                        //expression loop is epsilon
+                                //"return" base + $2
+                                $$ = new string(base + *($2));
+                            }
                         }
                 ;
 
 relation_and_expr:      relation_expr relation_and_expressions          
                             {
                                 /*printf("relation_and_expr -> relation_expr relation_and_expressions\n");*/
+                                $$ = $1;
                             }
                     ;
 
 relation_and_expressions:   /* empty */                                 
                                 {
                                     /*printf("relation_and_expressions -> epsilon\n");*/
+                                    $$ = new string("");
                                 }
                         |   AND relation_expr relation_and_expressions  
                                 {
                                     /*printf("relation_and_expressions -> AND relation_expr relation_and_expressions\n");*/
+                                    //declare base string to "return"
+                                    string base = (string) "&&" +  (string) ", ";
+
+                                    if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                                        //store addition result into generated temp
+                                        string temp = newTemp();
+                                        //code returned by the loop that is NOT empty
+                                        string code = *($3);
+                                        //need to add current $2 and $3 together and store in generated temp
+                                        code.insert(2, " " + temp + ", " + *($2));
+                                        //generate code
+                                        genCode(code);
+                                        //now "return" the base + temp
+                                        //value of expression generated above is in the generated temp
+                                        $$ = new string(base + temp);
+                                    } else {                        //expression loop is epsilon
+                                        //"return" base + $2
+                                        $$ = new string(base + *($2));
+                                    }
                                 }
                         ;
 relation_expr:              expression comp expression      
@@ -316,12 +391,15 @@ relation_expr:              expression comp expression
                                     // }
                                         
                                 }
-                        |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/}
-                        |   FALSE                           {/*printf("relation_expr -> FALSE\n");*/}
-                        |   L_PAREN bool_expr R_PAREN       {/*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/}
+                        |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/ $$ = new string("1");}
+                        |   FALSE                           {/*printf("relation_expr -> FALSE\n");*/ $$ = new string("0");}
+                        |   L_PAREN bool_expr R_PAREN       
+                                {
+                                    /*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/
+                                }
                         |   NOT expression comp expression  {/*printf("relation_expr -> NOT expression comp expression\n");*/}
-                        |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/}
-                        |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/}
+                        |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new string("0");}
+                        |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/ $$ = new string("1");}
                         |   NOT L_PAREN bool_expr R_PAREN   {/*printf("relation_expr -> NOT L_PAREN bool_expr R_PAREN\n");*/}
                         ;
 
@@ -481,8 +559,14 @@ term:               IDENT L_PAREN expressions R_PAREN
                             //THIS IS A FUNCTION CALL
                             //SHOULD HANDLE MAYBE AT THE END WITH A STACK OR SOMETHING?
                             //IDK ATM
-
-                            // undeclared(*($1));    
+                            string temp = newTemp();
+                            string expr = *($3);
+                            genCode("param " + expr);
+                            string code = "call " + *($1) + ", " + temp;
+                            genCode(code);
+                            $$ = new string(temp);
+                            //TODO: ADD GO TO STATEMENT
+                            undeclared(*($1));    
                         }
                 |   NUMBER                              
                         {

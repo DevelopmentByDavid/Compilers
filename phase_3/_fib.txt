@@ -4,18 +4,30 @@ func fibonacci
 = __temp__0, 1
 . __temp__1
 = __temp__1, 1
+ret __temp__1
 . __temp__2
 = __temp__2, 1
 . __temp__3
 - __temp__3, k, __temp__2
 . __temp__4
-= __temp__4, 2
+param __temp__3
+call fibonacci, __temp__4
 . __temp__5
-- __temp__5, k, __temp__4
+= __temp__5, 2
 . __temp__6
-+ __temp__6, fibonacci, fibonacci
+- __temp__6, k, __temp__5
+. __temp__7
+param __temp__6
+call fibonacci, __temp__7
+. __temp__8
++ __temp__8, __temp__4, __temp__7
+ret __temp__8
 func main
 . n
 . fib_n
 .< n
+. __temp__9
+param n
+call fibonacci, __temp__9
+= fib_n, __temp__9
 .> fib_n

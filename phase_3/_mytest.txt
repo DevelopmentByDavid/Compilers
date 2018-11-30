@@ -32,46 +32,50 @@ func main
 . __temp__9
 = __temp__9, 0
 . __temp__10
-= __temp__10, 2
+&& __temp__10, j, i
 . __temp__11
-* __temp__11, i, __temp__10
-[] = t, i, __temp__11
+= __temp__11, 2
 . __temp__12
-= __temp__12, 2
+* __temp__12, i, __temp__11
+[] = t, i, __temp__12
 . __temp__13
-* __temp__13, j, __temp__12
-[] = t, j, __temp__13
+= __temp__13, 2
 . __temp__14
-= [] __temp__14, t, i
-= k, __temp__14
+* __temp__14, j, __temp__13
+[] = t, j, __temp__14
 . __temp__15
-= [] __temp__15, t, j
-[] = t, i, __temp__15
-[] = t, j, k
+= [] __temp__15, t, i
+= k, __temp__15
 . __temp__16
-= __temp__16, 1
+= [] __temp__16, t, j
+[] = t, i, __temp__16
+[] = t, j, k
 . __temp__17
-- __temp__17, i, j
+| __temp__17, i|, 0
 . __temp__18
-+ __temp__18, __temp__16, __temp__17
+= __temp__18, 1
 . __temp__19
-= __temp__19, 3
+- __temp__19, i, j
 . __temp__20
-% __temp__20, __temp__18, __temp__19
-= k, __temp__20
++ __temp__20, __temp__18, __temp__19
 . __temp__21
-= __temp__21, 1
+= __temp__21, 3
 . __temp__22
-- __temp__22, i, __temp__21
-= i, __temp__22
+% __temp__22, __temp__20, __temp__21
+= k, __temp__22
 . __temp__23
 = __temp__23, 1
+. __temp__24
+- __temp__24, i, __temp__23
+= i, __temp__24
+. __temp__25
+= __temp__25, 1
 .> k
 .> i
 .> j
-. __temp__24
-= __temp__24, 0
+. __temp__26
+= __temp__26, 0
 .[]> t, i
-. __temp__25
-= __temp__25, 0
+. __temp__27
+= __temp__27, 0
 .[]> t, j

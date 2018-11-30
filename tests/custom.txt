@@ -14,11 +14,10 @@ endparams
 
 beginlocals
 
-n : integer;
-t : array [20] of integer;
+n, m, o : integer;
 
 endlocals
 
 beginbody	## main program
-    n := t[2] % 3;
+    return n;
 endbody

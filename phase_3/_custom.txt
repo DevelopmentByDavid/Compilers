@@ -1,12 +1,5 @@
 func main
+. o
+. m
 . n
-. [] t, 20
-. __temp__0
-= __temp__0, 2
-. __temp__1
-= [] __temp__1, t, __temp__0
-. __temp__2
-= __temp__2, 3
-. __temp__3
-% __temp__3, __temp__1, __temp__2
-= n, __temp__3
+ret n
