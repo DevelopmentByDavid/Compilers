@@ -64,7 +64,9 @@ void print() {
 void func(string funcName) {
     //push current stuff into the new fn
     fn temp;
-    CODE.push_front("func " + funcName);
+
+    // CODE.push_front("func " + funcName);
+    
     temp.code = CODE;
     temp.symbolTable = SYMBOLTABLE;
     FUNCTIONS.push_back(temp);
@@ -92,6 +94,12 @@ void undeclared(string foo) {
     if (!exist(foo)) {
         cerr << "ERROR! \'" + foo + "\' is undeclared" << endl;
     }
+}
+
+string arrHandler(string arr) {     //arr in form of "var, index"
+    string temp = newTemp();
+    genCode("= [] " + temp + ", " + arr);
+    return temp;
 }
 
 // void addTable(string toAdd) {

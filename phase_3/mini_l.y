@@ -38,6 +38,7 @@
 %type <myString> var
 %type <myString> vars
 %type <myString> idents
+%type <myString> fnName
 
 %type <myString> bool_expressions
 %type <myString> relation_and_expressions
@@ -117,16 +118,24 @@ functions:          /* empty */              {/*printf("functions -> epsilon\n")
                         }
                 ;
 
-function:           FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
+function:           fnName SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                     BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
                         {
                             /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
                             // funcName($2);
-                            if (addTable(*($2))) {
-                                // genCode( "func " + *($2));
-                                func(*($2));
-                            };
+                            func(*($1));
+                        }
+                ;
+fnName:             FUNCTION IDENT  
+                        {   
+                            /*
+                                PUTTING THIS IN SEP RULE SO FUNCTION NAME IS 
+                                PUT INTO SYMBOL TABLE FIRST
+                            */
+                            genCode("func " + *($2));
+                            addTable(*($2));
+                            $$ = $2;
                         }
                 ;
 
@@ -169,19 +178,31 @@ statement:          var ASSIGN expression
                             /*printf("statement -> var ASSIGN expression\n");*/
                             if (exist(*($1)) && exist(*($3))) {             //if both variables exist, then simple assign statement
                                 genCode("= " + *($1) + ", " + *($3));
-                            }
-                            //  else if (!exist(*($1))) {
+                            } else if (!exist(*($1)) && exist(*($3))) {     //if left side is an array var and right side is not
+                                string code = *($1);
+                                string toAppend = *($3);
+                                code.insert(0, "[] = ");
+                                code.append(", " + toAppend);
+                                genCode(code);
+                            } 
+                            // else if (exist(*($1)) && !exist(*($3))) {     //if right side is an array var and left side is not
+                            //     string temp = newTemp();
+                            //     string toStore = *($3);
+                            //     toStore.insert(0, "= [] " + temp + ", ");
+                            //     genCode(toStore);
+                            //     genCode("= " + *($1) + ", " + temp);
+                            // } else {                                        //if both sides are an array
                             //     string code = *($1);
-                            //     code.insert(0, "[]= ");
+                            //     string toAppend = *($3);
+                            //     string temp = newTemp();
+                            //     toAppend.insert(0, "= [] " + temp + ", ");
+                            //     genCode(toAppend);
+                            //     //to append is now stored in temp
+                            //     code.insert(0, "[] = ");
+                            //     code.append(", " + temp);
                             //     genCode(code);
-                            // } else {
-                            //     genCode("$1: " + *($1) + "\n" + "$3" + *($3) + "\n");
+                            // }
 
-                            // }
-                            //  else if (!exist(*($3))) {                     //if $3 !exist, then it's a piece of code & $1 is dest
-                            //     string code = *($3);
-                            //     genCode(code.insert(1, " " + *($1)));
-                            // }
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
@@ -205,10 +226,36 @@ statement:          var ASSIGN expression
                 |   READ var vars                                                                               
                         {
                             /*printf("statement ->  READ var vars\n");*/
+                            if (!exist(*($2))) {
+                                genCode(".[]< " + *($2));
+                            } else {
+                                genCode(".< " + *($2));
+                            }
+
+                            if (($3)->compare("") != 0) {
+                                if (!exist(*($3))) {
+                                    genCode(".[]< " + *($3));
+                                } else {
+                                    genCode(".< " + *($3));
+                                }
+                            }
                         }
                 |   WRITE var vars                                                                              
                         {
                             /*printf("statement -> WRITE var vars\n");*/
+                            if (!exist(*($2))) {
+                                genCode(".[]> " + *($2));
+                            } else {
+                                genCode(".> " + *($2));
+                            }
+
+                            if (($3)->compare("") != 0) {
+                                if (!exist(*($3))) {
+                                    genCode(".[]> " + *($3));
+                                } else {
+                                    genCode(".> " + *($3));
+                                }
+                            }
                         }
                 |   CONTINUE                                                                                    
                         {
@@ -293,12 +340,13 @@ expression:         multiplicative_expr expression_loop
                             if (($2)->compare("") != 0) {   //if an expression loop exists
                                 //local vars
                                 string code = *($2);
+                                string temp = newTemp();
 
                                 //only applies to local code
-                                code.insert(1, ", " + *($1));
-
+                                code.insert(1, " " + temp + ", " + *($1));
+                                genCode(code);
                                 //"return" code
-                                $$ = new string(code);
+                                $$ = new string(temp);
                             } else {                        //if expression loop does not exist; i.e. just a number
                                 $$ = $1;
                             }
@@ -376,6 +424,9 @@ expressions:        expression COMMA expressions
                 |   /* empty */                     
                         {
                             /*printf("expressions -> epsilon\n");*/
+
+                            //might need later but works w/o it atm
+                            // $$ = new string("");
                         }
                 ;
 
@@ -407,16 +458,16 @@ terms:              /* empty */
 multiplicative_expr:        term terms      
                                 {
                                     /*printf("multiplicative_expr -> term terms\n");*/
-
                                     if (($2)->compare("") != 0) {
                                         //local var
                                         string code = *($2);
-
+                                        string temp = newTemp();
                                         //inserting code
-                                        code.insert(1, ", " + *($1));
+                                        code.insert(1," " + temp + ", " + *($1));
+                                        genCode(code);
 
                                         //"return" statement
-                                        $$ = new string(code);
+                                        $$ = new string(temp);
                                     } else {
                                         $$ = $1;
                                     }
@@ -427,18 +478,9 @@ term:               IDENT L_PAREN expressions R_PAREN
                         {
                             /*printf("term -> IDENT L_PAREN expressions R_PAREN\n");*/
 
-                            /*
-                                []= dst, index, src	
-                            */
-
-                            //temp is dest
-                            // string temp = newTemp();
-                            // //base string setup; source is $1; index is $3
-                            // string base = "=[] " + temp + ", " + *($3) + ", " + *($1);
-                            // //generate code
-                            // genCode(base);
-                            // //"return" temp b/c it now stores the array value
-                            // $$ = new string(temp);
+                            //THIS IS A FUNCTION CALL
+                            //SHOULD HANDLE MAYBE AT THE END WITH A STACK OR SOMETHING?
+                            //IDK ATM
 
                             // undeclared(*($1));    
                         }
@@ -457,11 +499,8 @@ term:               IDENT L_PAREN expressions R_PAREN
                         {
                             /*printf("term -> var\n");*/
                             if (!exist(*($1))) {        //if $1 isn't just an identifier
-                                string code = *($1);
-                                code.insert(0, "=[] ");
-                                genCode(code);
-                                $$ = new string(code);
-                            } else {
+                                $$ = new string(arrHandler(*($1)));
+                            } else {    
                                 $$ = $1;
                             }
                         }
@@ -486,8 +525,8 @@ term:               IDENT L_PAREN expressions R_PAREN
                 |   SUB L_PAREN expression R_PAREN      
                         {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
-
-                             $$ = new string( (string) "-" + *($3) );
+                            //SUB A FUNCTION CALL
+                            
                         }
                 ;
 
@@ -500,21 +539,25 @@ var:                IDENT
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    
                         {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
-                            //base string setup; source is $1; index is $3
-                            string base = "=[] " + temp + ", " + *($1) + ", " + *($3);
+                            //arr is $1; index is $3
+                            string base = *($1) + ", " + *($3);
                             //"return" temp b/c it now stores the array value
-                            $$ = new string(temp);
+                            $$ = new string(base);
 
                             undeclared(*($1));
                         }
                 ;
 
-vars:               /* empty */                 {/*printf("vars -> epsilon\n");*/}
+vars:               /* empty */                 
+                        {
+                            /*printf("vars -> epsilon\n");*/
+                            $$ = new string("");
+                        }
                 |   COMMA var vars              
-                    {
-                        /*printf("vars -> COMMA var vars \n");*/
-                        $$ = $2;
-                    }
+                        {
+                            /*printf("vars -> COMMA var vars \n");*/
+                            $$ = $2;
+                        }
                 ;
 
 %%
