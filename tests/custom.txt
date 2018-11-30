@@ -21,5 +21,6 @@ endlocals
 
 beginbody	## main program
     t[2] := n;
-    n := t[2];
+    n := t[2] + 2;
+    n := t[3];
 endbody

@@ -170,6 +170,14 @@ statement:          var ASSIGN expression
                             if (exist(*($1)) && exist(*($3))) {             //if both variables exist, then simple assign statement
                                 genCode("= " + *($1) + ", " + *($3));
                             }
+                            //  else if (!exist(*($1))) {
+                            //     string code = *($1);
+                            //     code.insert(0, "[]= ");
+                            //     genCode(code);
+                            // } else {
+                            //     genCode("$1: " + *($1) + "\n" + "$3" + *($3) + "\n");
+
+                            // }
                             //  else if (!exist(*($3))) {                     //if $3 !exist, then it's a piece of code & $1 is dest
                             //     string code = *($3);
                             //     genCode(code.insert(1, " " + *($1)));
@@ -424,15 +432,15 @@ term:               IDENT L_PAREN expressions R_PAREN
                             */
 
                             //temp is dest
-                            string temp = newTemp();
-                            //base string setup; source is $1; index is $3
-                            string base = "[]= " + temp + ", " + *($3) + ", " + *($1);
-                            //generate code
-                            genCode(base);
-                            //"return" temp b/c it now stores the array value
-                            $$ = new string(temp);
+                            // string temp = newTemp();
+                            // //base string setup; source is $1; index is $3
+                            // string base = "=[] " + temp + ", " + *($3) + ", " + *($1);
+                            // //generate code
+                            // genCode(base);
+                            // //"return" temp b/c it now stores the array value
+                            // $$ = new string(temp);
 
-                            undeclared(*($1));    
+                            // undeclared(*($1));    
                         }
                 |   NUMBER                              
                         {
@@ -449,7 +457,10 @@ term:               IDENT L_PAREN expressions R_PAREN
                         {
                             /*printf("term -> var\n");*/
                             if (!exist(*($1))) {        //if $1 isn't just an identifier
-                                    
+                                string code = *($1);
+                                code.insert(0, "=[] ");
+                                genCode(code);
+                                $$ = new string(code);
                             } else {
                                 $$ = $1;
                             }
@@ -489,13 +500,8 @@ var:                IDENT
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    
                         {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
-
-                            //temp is dest
-                            string temp = newTemp();
                             //base string setup; source is $1; index is $3
-                            string base = temp + ", " + *($1) + ", " + *($3);
-                            //generate code
-                            genCode(base);
+                            string base = "=[] " + temp + ", " + *($1) + ", " + *($3);
                             //"return" temp b/c it now stores the array value
                             $$ = new string(temp);
 
