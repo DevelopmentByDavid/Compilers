@@ -222,16 +222,10 @@ statement:          var ASSIGN expression
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
-                            /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/
-                            genCode("*************");
-                            genCode(*($2));
-                            genCode(*($4));
-                            // genCode()
-                            genCode("*************");
-                            // string ifLabel = newLabel();
-                            // string 
-                            // genCode(ifLabel);
-                            
+                            /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/                            
+                            if (($2)->compare("") != 0) {
+                                genCode(": " + *($2));
+                            }
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
                         {
@@ -306,10 +300,23 @@ bool_expr:          relation_and_expr bool_expressions
                                 //only applies to local code
                                 code.insert(1, " " + temp + ", " + *($1));
                                 genCode(code);
+
+                                string runCodeLabel = newLabel();
+                                genCode("?:= " + runCodeLabel + ", " + temp);
+                                genCode(": " + runCodeLabel);
+                                string skipLabel = newLabel();
+                                genCode(":= " + skipLabel);
                                 //"return" code
-                                $$ = new string(temp);
-                            } else {                        //if expression loop does not exist; i.e. just a number
-                                $$ = $1;
+                                $$ = new string(skipLabel);
+                            } else if (($1)->compare("") != 0) {                        //if expression loop does not exist; i.e. just a number
+                                string runCodeLabel = newLabel();
+                                genCode("?:= " + runCodeLabel + ", " + *($1));
+                                genCode(": " + runCodeLabel);
+                                // genCode("why am I getting a k? " + *($1));
+                                string skipLabel = newLabel();
+                                genCode(":= " + skipLabel);
+                                //"return" code
+                                $$ = new string(skipLabel);
                             }
                         }
                 ;
@@ -385,26 +392,21 @@ relation_and_expressions:   /* empty */
 relation_expr:              expression comp expression      
                                 {
                                     /*printf("relation_expr -> expression comp expression\n");*/
-                                    // MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
-                                    switch ($2) {
-                                        case _EQ: 
-                                            if (exist(*($1)) && exist(*($3))) {
-                                                genCode("==" + *($1) + ", " + *($3));
-                                            } else {
-                                                cerr << "Variable does not exist" << endl;
-                                            }
-                                            break;
-                                        default: 
-                                        //do nothing
-                                            break;
+                                    if (exist(*($1)) && exist(*($3))) {
+                                        string temp = newTemp();
+                                        genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
+                                        $$ = new string(temp);
+                                    } else {
+                                        cerr << "Variable does not exist" << endl;
                                     }
-                                        
+                                    
                                 }
                         |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/ $$ = new string("1");}
                         |   FALSE                           {/*printf("relation_expr -> FALSE\n");*/ $$ = new string("0");}
                         |   L_PAREN bool_expr R_PAREN       
                                 {
                                     /*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/
+                                    $$ = $2;
                                 }
                         |   NOT expression comp expression  {/*printf("relation_expr -> NOT expression comp expression\n");*/}
                         |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new string("0");}
@@ -415,9 +417,9 @@ relation_expr:              expression comp expression
 comp:               EQ      {/*printf("comp -> EQ\n");*/ $$ = new string("== ");}
                 |   NEQ     {/*printf("comp -> NEQ\n");*/ $$ = new string("!= ");}
                 |   LT      {/*printf("comp -> LT\n");*/ $$ = new string("< ");}
-                |   GT      {/*printf("comp -> GT\n");*/ $$ = new string(">");}
-                |   LTE     {/*printf("comp -> LTE\n");*/ $$ = new string("<=");}
-                |   GTE     {/*printf("comp -> GTE\n");*/ $$ = new string(">=");}
+                |   GT      {/*printf("comp -> GT\n");*/ $$ = new string("> ");}
+                |   LTE     {/*printf("comp -> LTE\n");*/ $$ = new string("<= ");}
+                |   GTE     {/*printf("comp -> GTE\n");*/ $$ = new string(">= ");}
                 ;
 
 expression:         multiplicative_expr expression_loop         

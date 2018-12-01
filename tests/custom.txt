@@ -10,14 +10,12 @@
 
 function main;
 beginparams
+	k : integer;
 endparams
-
 beginlocals
-
-n, m, o : integer;
-
 endlocals
-
-beginbody	## main program
-    return n;
+beginbody
+	if (k <= 1) then return 1; endif;
+	return fibonacci(k - 1) + fibonacci(k - 2);
+endbody
 endbody
