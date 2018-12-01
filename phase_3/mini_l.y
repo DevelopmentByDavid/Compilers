@@ -29,7 +29,7 @@
 %type <myString> bool_expr
 %type <myString> relation_and_expr
 %type <myString> relation_expr
-%type <myInt> comp
+%type <myString> comp
 %type <myString> expression
 %type <myString> expressions
 %type <myString> multiplicative_expr
@@ -376,19 +376,19 @@ relation_and_expressions:   /* empty */
 relation_expr:              expression comp expression      
                                 {
                                     /*printf("relation_expr -> expression comp expression\n");*/
-                                    //MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
-                                    // switch ($2) {
-                                    //     case _EQ: 
-                                    //         if (exist(*($1)) && exist(*($3))) {
-                                    //             genCode("=" + *($1) + ", " + *($3));
-                                    //         } else {
-                                    //             cerr << "Variable does not exist" << endl;
-                                    //         }
-                                    //         break;
-                                    //     default: 
-                                    //     //do nothing
-                                    //         break;
-                                    // }
+                                    // MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
+                                    switch ($2) {
+                                        case _EQ: 
+                                            if (exist(*($1)) && exist(*($3))) {
+                                                genCode("==" + *($1) + ", " + *($3));
+                                            } else {
+                                                cerr << "Variable does not exist" << endl;
+                                            }
+                                            break;
+                                        default: 
+                                        //do nothing
+                                            break;
+                                    }
                                         
                                 }
                         |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/ $$ = new string("1");}
@@ -403,12 +403,12 @@ relation_expr:              expression comp expression
                         |   NOT L_PAREN bool_expr R_PAREN   {/*printf("relation_expr -> NOT L_PAREN bool_expr R_PAREN\n");*/}
                         ;
 
-comp:               EQ      {/*printf("comp -> EQ\n");*/ $$ = _EQ;}
-                |   NEQ     {/*printf("comp -> NEQ\n");*/ $$ =_NEQ;}
-                |   LT      {/*printf("comp -> LT\n");*/ $$ = _LT;}
-                |   GT      {/*printf("comp -> GT\n");*/ $$ = _GT;}
-                |   LTE     {/*printf("comp -> LTE\n");*/ $$ = _LTE;}
-                |   GTE     {/*printf("comp -> GTE\n");*/ $$ = _GTE;}
+comp:               EQ      {/*printf("comp -> EQ\n");*/ $$ = new string("== ");}
+                |   NEQ     {/*printf("comp -> NEQ\n");*/ $$ = new string("!= ");}
+                |   LT      {/*printf("comp -> LT\n");*/ $$ = new string("< ");}
+                |   GT      {/*printf("comp -> GT\n");*/ $$ = new string(">");}
+                |   LTE     {/*printf("comp -> LTE\n");*/ $$ = new string("<=");}
+                |   GTE     {/*printf("comp -> GTE\n");*/ $$ = new string(">=");}
                 ;
 
 expression:         multiplicative_expr expression_loop         

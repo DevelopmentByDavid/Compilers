@@ -1885,19 +1885,19 @@ yyreduce:
 #line 377 "mini_l.y"
     {
                                     /*printf("relation_expr -> expression comp expression\n");*/
-                                    //MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
-                                    // switch ($2) {
-                                    //     case _EQ: 
-                                    //         if (exist(*($1)) && exist(*($3))) {
-                                    //             genCode("=" + *($1) + ", " + *($3));
-                                    //         } else {
-                                    //             cerr << "Variable does not exist" << endl;
-                                    //         }
-                                    //         break;
-                                    //     default: 
-                                    //     //do nothing
-                                    //         break;
-                                    // }
+                                    // MISTAKE _EQ IS == NOT AN ASSIGNMENT!!!!!!!!!!!
+                                    switch ((yyvsp[(2) - (3)].myInt)) {
+                                        case _EQ: 
+                                            if (exist(*((yyvsp[(1) - (3)].myString))) && exist(*((yyvsp[(3) - (3)].myString)))) {
+                                                genCode("==" + *((yyvsp[(1) - (3)].myString)) + ", " + *((yyvsp[(3) - (3)].myString)));
+                                            } else {
+                                                cerr << "Variable does not exist" << endl;
+                                            }
+                                            break;
+                                        default: 
+                                        //do nothing
+                                            break;
+                                    }
                                         
                                 ;}
     break;

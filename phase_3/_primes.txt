@@ -37,6 +37,7 @@ func main
 = [] __temp__10, a, i
 . __temp__11
 = __temp__11, 0
+==__temp__10, __temp__11
 . __temp__12
 + __temp__12, i, i
 = j, __temp__12
@@ -58,6 +59,7 @@ func main
 = [] __temp__18, a, i
 . __temp__19
 = __temp__19, 0
+==__temp__18, __temp__19
 .> i
 . __temp__20
 = __temp__20, 1

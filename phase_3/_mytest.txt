@@ -24,6 +24,7 @@ func main
 % __temp__5, k, __temp__4
 . __temp__6
 = __temp__6, 0
+==__temp__5, __temp__6
 . __temp__7
 = __temp__7, 1
 . __temp__8
