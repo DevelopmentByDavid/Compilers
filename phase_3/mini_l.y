@@ -292,7 +292,7 @@ statement:          var ASSIGN expression
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
-                            if (($2)->compare("") != 0) {           //if an bool_expression loop exists
+                            if (($2)->compare("") != 0 && ($2)->compare(0, 9, "__label__") != 0) {           //if an bool_expression loop exists
                                 //local vars
                                 string code = *($2);
                                 string temp = newTemp();
@@ -302,19 +302,19 @@ bool_expr:          relation_and_expr bool_expressions
                                 genCode(code);
 
                                 string runCodeLabel = newLabel();
-                                genCode("?:= " + runCodeLabel + ", " + temp);
-                                genCode(": " + runCodeLabel);
                                 string skipLabel = newLabel();
+                                genCode("?:= " + runCodeLabel + ", " + temp);
                                 genCode(":= " + skipLabel);
+                                genCode(": " + runCodeLabel);
                                 //"return" code
                                 $$ = new string(skipLabel);
-                            } else if (($1)->compare("") != 0) {                        //if expression loop does not exist; i.e. just a number
+                            } else if (($1)->compare("") != 0 && ($1)->compare(0, 9, "__label__") != 0) {                        //if expression loop does not exist; i.e. just a number
                                 string runCodeLabel = newLabel();
+                                string skipLabel = newLabel();
                                 genCode("?:= " + runCodeLabel + ", " + *($1));
+                                genCode(":= " + skipLabel);
                                 genCode(": " + runCodeLabel);
                                 // genCode("why am I getting a k? " + *($1));
-                                string skipLabel = newLabel();
-                                genCode(":= " + skipLabel);
                                 //"return" code
                                 $$ = new string(skipLabel);
                             }
