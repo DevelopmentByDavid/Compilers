@@ -4,6 +4,9 @@
 #define VAR_PREFIX "__temp__"
 int VAR_COUNT = 0;
 
+#define LABEL_PREFIX "__label__"
+int LABEL_COUNT = 0;
+
 //forward decl
 struct fn;
 
@@ -66,7 +69,7 @@ void func(string funcName) {
     fn temp;
 
     // CODE.push_front("func " + funcName);
-    
+
     temp.code = CODE;
     temp.symbolTable = SYMBOLTABLE;
     FUNCTIONS.push_back(temp);
@@ -100,6 +103,18 @@ string arrHandler(string arr) {     //arr in form of "var, index"
     string temp = newTemp();
     genCode("= [] " + temp + ", " + arr);
     return temp;
+}
+
+string newLabel() {
+    stringstream temp;
+    temp << LABEL_PREFIX;
+    temp << LABEL_COUNT;
+    LABEL_COUNT++;
+    addTable(temp.str());
+    //don't want to genCode here b/c i want to manually place the labels
+    //where they should go inside the semantic actions
+    // genCode(": " + temp.str());
+    return temp.str();
 }
 
 // void addTable(string toAdd) {

@@ -1,5 +1,0 @@
-func main
-. o
-. m
-. n
-ret n

@@ -223,6 +223,15 @@ statement:          var ASSIGN expression
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/
+                            genCode("*************");
+                            genCode(*($2));
+                            genCode(*($4));
+                            // genCode()
+                            genCode("*************");
+                            // string ifLabel = newLabel();
+                            // string 
+                            // genCode(ifLabel);
+                            
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
                         {
