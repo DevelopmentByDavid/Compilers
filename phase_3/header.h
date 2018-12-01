@@ -10,6 +10,7 @@
 #include <sstream>
 #include <cassert>
 #include <stdio.h>
+#include <stack>
 using namespace std;
 
 
@@ -49,6 +50,8 @@ extern void genCode(string );
 extern void undeclared(string);
 extern string arrHandler(string);
 extern string newLabel();
+extern void push_goto(string);
+extern string pop_goto();
 
 //THIS MUST BE INCLUDED LAST FOR STUFF TO WORK
 //IT'S ANNOYING BUT NECESSARY

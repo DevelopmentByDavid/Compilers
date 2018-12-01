@@ -14,6 +14,7 @@ struct fn;
 list<std::string> SYMBOLTABLE;
 list<std::string> CODE;
 list<fn> FUNCTIONS;
+stack<string> GOTO;
 
 //yy stuff declarations
 extern int yylex(void);
@@ -43,6 +44,10 @@ int main(int argc, char **argv) {
 
 int exist(string toCheck) {
     for (list<string>::iterator it = SYMBOLTABLE.begin(); it != SYMBOLTABLE.end(); ++it){
+        if (toCheck.compare("fibonacci") == 0) {
+            // cout << "EXIST " << *it << endl;
+            // cout << toCheck.compare(*it) << endl;
+        }
         if (toCheck.compare(*it) == 0) return 1;
     }
     return 0;
@@ -115,6 +120,16 @@ string newLabel() {
     //where they should go inside the semantic actions
     // genCode(": " + temp.str());
     return temp.str();
+}
+
+string pop_goto() {
+    string temp = GOTO.top();
+    GOTO.pop();
+    return temp;
+}
+
+void push_goto(string toPush) {
+    GOTO.push(toPush);
 }
 
 // void addTable(string toAdd) {

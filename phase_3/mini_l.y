@@ -39,6 +39,8 @@
 %type <myString> vars
 %type <myString> idents
 %type <myString> fnName
+%type <myString> params
+%type <myString> pre_else
 
 %type <myString> bool_expressions
 %type <myString> relation_and_expressions
@@ -118,13 +120,25 @@ functions:          /* empty */              {/*printf("functions -> epsilon\n")
                         }
                 ;
 
-function:           fnName SEMICOLON BEGIN_PARAMS declarations END_PARAMS
+function:           fnName SEMICOLON params
                     BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
                         {
                             /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
                             // funcName($2);
+                            genCode("endfunc\n");
                             func(*($1));
+                        }
+                ;
+params:             BEGIN_PARAMS declarations END_PARAMS
+                        {
+                            if (($2)->compare("") != 0) {
+                                static int i = 0;
+                                stringstream temp;
+                                temp << "= " << *($2) << ", $" << i;
+                                genCode(temp.str());
+                                i++;
+                            }
                         }
                 ;
 fnName:             FUNCTION IDENT  
@@ -147,7 +161,7 @@ declarations:       /* empty */
                 |   declaration SEMICOLON declarations  
                         {
                             /*printf("declarations -> declaration SEMICOLON declarations\n");*/
-                            $$ = new string("");
+                            $$ = $1;
                         }
                 ;
 
@@ -157,6 +171,7 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                             if (addTable(*($1))) {
                                 genCode(". [] " + *($1) + ", " + *($6));
                             };
+                            $$ = $1;
                         }
                 |   IDENT idents COLON INTEGER                                                     
                         {
@@ -164,6 +179,7 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                             if (addTable(*($1))) {
                                 genCode(". " + *($1));
                             };
+                            $$ = $1;
                         }
                 ;
 
@@ -223,24 +239,27 @@ statement:          var ASSIGN expression
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/                            
-                            if (($2)->compare("") != 0) {
-                                genCode(": " + *($2));
-                            }
+                            genCode(": " + *($2));
                         }
-                |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
+                |   pre_else statement SEMICOLON statements ENDIF  
                         {
                             /*
                                 printf("statement -> IF bool_expr THEN statement 
                                 SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");
                             */
+                            
                         }
                 |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
                         {
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
+                            genCode(": " + *($2));
                         }
                 |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr                         
                         {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
+                            //MIGHT NEED TO CHANGE LABELING ORDER FOR DO WHILE
+                            genCode(": " + *($8));
+                            //NEED TO ADD A LABEL BEFORE THE DO BEGINS SO I CAN GO BACK TO IT
                         }
                 |   READ var vars                                                                               
                         {
@@ -280,6 +299,7 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> CONTINUE\n");*/
                             //THIS WOULD BE A GOTO STATEMENT
+                            // genCode(":= " + pop_goto());
                         }
                 |   RETURN expression                                                                           
                         {
@@ -289,35 +309,42 @@ statement:          var ASSIGN expression
                         }
                 ;
 
+pre_else:           IF bool_expr THEN statement SEMICOLON statements ELSE
+                        {
+                            genCode(": " + *($2));
+                        }
+                ;
+
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
-                            if (($2)->compare("") != 0 && ($2)->compare(0, 9, "__label__") != 0) {           //if an bool_expression loop exists
-                                //local vars
-                                string code = *($2);
-                                string temp = newTemp();
+                            // if (($2)->compare("") != 0 && ($2)->compare(0, 9, "__label__") != 0) {           //if an bool_expression loop exists
+                            //     //local vars
+                            //     string code = *($2);
+                            //     string temp = newTemp();
 
-                                //only applies to local code
-                                code.insert(1, " " + temp + ", " + *($1));
-                                genCode(code);
+                            //     //only applies to local code
+                            //     code.insert(1, " " + temp + ", " + *($1));
+                            //     genCode(code);
 
-                                string runCodeLabel = newLabel();
-                                string skipLabel = newLabel();
-                                genCode("?:= " + runCodeLabel + ", " + temp);
-                                genCode(":= " + skipLabel);
-                                genCode(": " + runCodeLabel);
-                                //"return" code
-                                $$ = new string(skipLabel);
-                            } else if (($1)->compare("") != 0 && ($1)->compare(0, 9, "__label__") != 0) {                        //if expression loop does not exist; i.e. just a number
-                                string runCodeLabel = newLabel();
-                                string skipLabel = newLabel();
-                                genCode("?:= " + runCodeLabel + ", " + *($1));
-                                genCode(":= " + skipLabel);
-                                genCode(": " + runCodeLabel);
-                                // genCode("why am I getting a k? " + *($1));
-                                //"return" code
-                                $$ = new string(skipLabel);
-                            }
+                            //     string runCodeLabel = newLabel();
+                            //     string skipLabel = newLabel();
+                            //     genCode("?:= " + runCodeLabel + ", " + temp);
+                            //     genCode(":= " + skipLabel);
+                            //     genCode(": " + runCodeLabel);
+                            //     //"return" code
+                            //     $$ = new string(skipLabel);
+                            // } else if (($1)->compare("") != 0 && ($1)->compare(0, 9, "__label__") != 0) {                        //if expression loop does not exist; i.e. just a number
+                            //     string runCodeLabel = newLabel();
+                            //     string skipLabel = newLabel();
+                            //     genCode("?:= " + runCodeLabel + ", " + *($1));
+                            //     genCode(":= " + skipLabel);
+                            //     genCode(": " + runCodeLabel);
+                            //     // genCode("why am I getting a k? " + *($1));
+                            //     //"return" code
+                            //     $$ = new string(skipLabel);
+                            // }
+                            $$ = $1;
                         }
                 ;
 
@@ -395,7 +422,13 @@ relation_expr:              expression comp expression
                                     if (exist(*($1)) && exist(*($3))) {
                                         string temp = newTemp();
                                         genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
-                                        $$ = new string(temp);
+                                        // $$ = new string(temp);
+                                        string execLabel = newLabel();
+                                        string skipLabel = newLabel();
+                                        genCode("?:= " + execLabel + ", " + temp);
+                                        genCode(":= " + skipLabel);
+                                        genCode(": " + execLabel);
+                                        $$ = new string(skipLabel);
                                     } else {
                                         cerr << "Variable does not exist" << endl;
                                     }
@@ -571,13 +604,14 @@ term:               IDENT L_PAREN expressions R_PAREN
                             //SHOULD HANDLE MAYBE AT THE END WITH A STACK OR SOMETHING?
                             //IDK ATM
                             string temp = newTemp();
+                            string paramTemp = newTemp();
                             string expr = *($3);
-                            genCode("param " + expr);
+                            genCode("= " + paramTemp + ", " + expr);
+                            genCode("param " + paramTemp);
                             string code = "call " + *($1) + ", " + temp;
                             genCode(code);
                             $$ = new string(temp);
                             //TODO: ADD GO TO STATEMENT
-                            undeclared(*($1));    
                         }
                 |   NUMBER                              
                         {
@@ -629,7 +663,6 @@ var:                IDENT
                         {
                             /*printf("var -> IDENT\n");*/
                             $$ = $1;
-                            undeclared(*($1));
                         }
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    
                         {
@@ -639,7 +672,6 @@ var:                IDENT
                             //"return" temp b/c it now stores the array value
                             $$ = new string(base);
 
-                            undeclared(*($1));
                         }
                 ;
 
