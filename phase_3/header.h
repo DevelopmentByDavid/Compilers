@@ -35,11 +35,6 @@ using namespace std;
 #define _MULT   14
 #define _GT    15
 
-struct arr_struct {
-    string src;
-    string dest;
-    string index;
-};
 
 extern string newTemp();
 extern int addTable(string);

@@ -1,31 +1,29 @@
 #include "header.h"
 
-class node {
-    protected:
-        stringstream code;
-    public:
-        node() {}
-        ~node() {}
-        virtual void print() {cout << code.str();}
-};
-
-class fnNode: public node {
+class container {
     private:
-        list<string> fnSymbolTable;
+        list<string> curr_code;
+        string temp;
     public:
-        void copyTable(list<string> symbolTable) {
-            fnSymbolTable = symbolTable;
-            symbolTable = list<string>();
+        container() {}
+        ~container() {}
+        void push_back(string arg) {
+            curr_code.push_back(arg);
         }
-        fnNode(string name) {
-            code << "func " + name;
+        void push_front(string arg) {
+            curr_code.push_front(arg);
         }
-        ~fnNode() {} 
-};
-
-class sVarNode: public node {
-    public:
-        sVarNode(string foo) {
-            addTable(foo);
+        string getTemp() {
+            return temp;
+        }
+        void setTemp(string arg) {
+            temp = arg;
+        }
+        void shipCode() {
+            stringstream k;
+            for (list<string>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
+                    k << *it << endl;
+            }           
+            genCode(k.str());
         }
 };

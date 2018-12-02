@@ -13,7 +13,7 @@
 %union {
     string *myString;
     int myInt;
-    arr_struct *my_arr_struct;
+    stringstream *ss;
 }
 
 //start symbol
@@ -327,43 +327,59 @@ pre_else:           IF bool_expr THEN statement SEMICOLON statements ELSE
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
-                            // if (($2)->compare("") != 0 && ($2)->compare(0, 9, "__label__") != 0) {           //if an bool_expression loop exists
-                            //     //local vars
-                            //     string code = *($2);
-                            //     string temp = newTemp();
-
-                            //     //only applies to local code
-                            //     code.insert(1, " " + temp + ", " + *($1));
-                            //     genCode(code);
-
-                            //     string runCodeLabel = newLabel();
-                            //     string skipLabel = newLabel();
-                            //     genCode("?:= " + runCodeLabel + ", " + temp);
-                            //     genCode(":= " + skipLabel);
-                            //     genCode(": " + runCodeLabel);
-                            //     //"return" code
-                            //     $$ = new string(skipLabel);
-                            // } else if (($1)->compare("") != 0 && ($1)->compare(0, 9, "__label__") != 0) {                        //if expression loop does not exist; i.e. just a number
-                            //     string runCodeLabel = newLabel();
-                            //     string skipLabel = newLabel();
-                            //     genCode("?:= " + runCodeLabel + ", " + *($1));
-                            //     genCode(":= " + skipLabel);
-                            //     genCode(": " + runCodeLabel);
-                            //     // genCode("why am I getting a k? " + *($1));
-                            //     //"return" code
-                            //     $$ = new string(skipLabel);
-                            // }
-                            // $$ = $1;
-                            if (($2)->compare("") != 0) {
-                                string temp = newTemp();
+                            if (($2)->compare("") != 0) {           //if an bool_expression loop exists
+                                //local vars
                                 string code = *($2);
-                                code.insert(2, " " + temp + ", " + *($1));
-                                genCode("below");
+                                string temp = newTemp();
+
+                                //only applies to local code
+                                code.insert(1, " " + temp + ", " + *($1));
                                 genCode(code);
-                                $$ = new string(temp);
-                            } else {
-                                $$ = $1;
+
+                                string execLabel = newLabel();
+                                string skipLabel = newLabel();
+                                genCode("?:= " + execLabel + ", " + temp);
+                                genCode("************");
+                                genCode(":= " + skipLabel);
+                                genCode(": " + execLabel);
+                                //"return" code
+                                $$ = new string(skipLabel);
+                            } else {                        //if expression loop does not exist; i.e. just a number
+                                string execLabel = newLabel();
+                                string skipLabel = newLabel();
+                                genCode("?:= " + execLabel + ", " + *($1));
+                                genCode("^^^^^^^^^^^^^");
+                                genCode(":= " + skipLabel);
+                                genCode(": " + execLabel);
+                                // genCode("why am I getting a k? " + *($1));
+                                //"return" code
+                                $$ = new string(skipLabel);
                             }
+                            // $$ = $1;
+
+                            // string execLabel = newLabel();
+                            // string skipLabel = newLabel();
+                            // string checkLabel = pop_goto();
+                            // if (checkLabel.compare("") != 0) {
+                            //     execLabel = checkLabel;
+                            //     genCode("?:= " + execLabel + ", " + temp);
+                            // } else {
+                            //     genCode("?:= " + execLabel + ", " + temp);
+                            //     genCode(":= " + skipLabel);
+                            //     genCode(": " + execLabel);
+                            //     push_goto(skipLabel);
+                            //     $$  = new string(skipLabel);
+                            // }
+
+                            // if (($2)->compare("") != 0) {
+                            //     string temp = newTemp();
+                            //     string code = *($2);
+                            //     code.insert(2, " " + temp + ", " + *($1));
+                            //     genCode(code);
+                            //     $$ = new string(temp);
+                            // } else {
+                            //     $$ = $1;
+                            // }
                         }
                 ;
 
@@ -402,7 +418,17 @@ bool_expressions:   /* empty */
 relation_and_expr:      relation_expr relation_and_expressions          
                             {
                                 /*printf("relation_and_expr -> relation_expr relation_and_expressions\n");*/
-                                $$ = $1;
+                                if (($2)->compare("") != 0) {
+                                    //local vars
+                                    string temp = newTemp();
+                                    string code = *($2);
+                                    //insert code 
+                                    code.insert(2, temp + ", " + *($1));
+                                    genCode(code);
+                                    $$ = new string(temp);
+                                } else {
+                                    $$ = $1;
+                                }
                             }
                     ;
 
@@ -441,20 +467,21 @@ relation_expr:              expression comp expression
                                     if (exist(*($1)) && exist(*($3))) {
                                         string temp = newTemp();
                                         genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
-                                        // $$ = new string(temp);
-                                        string execLabel = newLabel();
-                                        string skipLabel = newLabel();
-                                        string checkLabel = pop_goto();
-                                        if (checkLabel.compare("") != 0) {
-                                            execLabel = checkLabel;
-                                            genCode("?:= " + execLabel + ", " + temp);
-                                        } else {
-                                            genCode("?:= " + execLabel + ", " + temp);
-                                            genCode(":= " + skipLabel);
-                                            genCode(": " + execLabel);
-                                            push_goto(skipLabel);
-                                            $$  = new string(skipLabel);
-                                        }
+                                        $$ = new string(temp);
+
+                                        // string execLabel = newLabel();
+                                        // string skipLabel = newLabel();
+                                        // string checkLabel = pop_goto();
+                                        // if (checkLabel.compare("") != 0) {
+                                        //     execLabel = checkLabel;
+                                        //     genCode("?:= " + execLabel + ", " + temp);
+                                        // } else {
+                                        //     genCode("?:= " + execLabel + ", " + temp);
+                                        //     genCode(":= " + skipLabel);
+                                        //     genCode(": " + execLabel);
+                                        //     push_goto(skipLabel);
+                                        //     $$  = new string(skipLabel);
+                                        // }
                                                                                 
                                     } else {
                                         cerr << "Variable does not exist" << endl;
@@ -471,30 +498,31 @@ relation_expr:              expression comp expression
                         |   NOT expression comp expression  
                                 {
                                     /*printf("relation_expr -> NOT expression comp expression\n");*/
-                                    if (exist(*($1)) && exist(*($3))) {
-                                        string temp = newTemp();
-                                        string notTemp = newTemp();
-                                        genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
-                                        // $$ = new string(temp);
-                                        genCode("! " + notTemp + ", " + temp);
-                                        string execLabel = newLabel();
-                                        string skipLabel = newLabel();
-                                        string checkLabel = pop_goto();
 
-                                        if (checkLabel.compare("") != 0) {
-                                            execLabel = checkLabel;
-                                            genCode("?:= " + execLabel + ", " + notTemp);
-                                        } else {
-                                            genCode("?:= " + execLabel + ", " + notTemp);
-                                            genCode(":= " + skipLabel);
-                                            genCode(": " + execLabel);
-                                            push_goto(skipLabel);
-                                            $$  = new string(skipLabel);
-                                        }
-                                        $$ = new string(skipLabel);
-                                    } else {
-                                        cerr << "Variable does not exist" << endl;
-                                    }
+                                    // if (exist(*($1)) && exist(*($3))) {
+                                    //     string temp = newTemp();
+                                    //     string notTemp = newTemp();
+                                    //     genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
+                                    //     // $$ = new string(temp);
+                                    //     genCode("! " + notTemp + ", " + temp);
+                                    //     string execLabel = newLabel();
+                                    //     string skipLabel = newLabel();
+                                    //     string checkLabel = pop_goto();
+
+                                    //     if (checkLabel.compare("") != 0) {
+                                    //         execLabel = checkLabel;
+                                    //         genCode("?:= " + execLabel + ", " + notTemp);
+                                    //     } else {
+                                    //         genCode("?:= " + execLabel + ", " + notTemp);
+                                    //         genCode(":= " + skipLabel);
+                                    //         genCode(": " + execLabel);
+                                    //         push_goto(skipLabel);
+                                    //         $$  = new string(skipLabel);
+                                    //     }
+                                    //     $$ = new string(skipLabel);
+                                    // } else {
+                                    //     cerr << "Variable does not exist" << endl;
+                                    // }
                                 }
                         |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new string("0");}
                         |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/ $$ = new string("1");}

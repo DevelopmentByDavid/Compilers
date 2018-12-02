@@ -24,5 +24,5 @@ endlocals
 beginbody	## main program
     do beginloop
         n := 2;
-    endloop while ((n > 2) or (n < 10));
+    endloop while ((n > 2) and (n < 10) and (n < 7));
 endbody
