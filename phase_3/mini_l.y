@@ -26,23 +26,23 @@
 %type <myBlock> declarations
 %type <myBlock> statement
 %type <myBlock> statements
-%type <myString> bool_expr
-%type <myString> relation_and_expr
-%type <myString> relation_expr
+%type <myBlock> bool_expr
+%type <myBlock> relation_and_expr
+%type <myBlock> relation_expr
 %type <myString> comp
-%type <myString> expression
-%type <myString> expressions
-%type <myString> multiplicative_expr
-%type <myString> terms
-%type <myString> term
-%type <myString> var
-%type <myString> vars
+%type <myBlock> expression
+%type <myBlock> expressions
+%type <myBlock> multiplicative_expr
+%type <myBlock> terms
+%type <myBlock> term
+%type <myBlock> var
+%type <myBlock> vars
 %type <myBlock> idents
 %type <myBlock> params
 
-%type <myString> bool_expressions
-%type <myString> relation_and_expressions
-%type <myString> expression_loop
+%type <myBlock> bool_expressions
+%type <myBlock> relation_and_expressions
+%type <myBlock> expression_loop
 
 %token <myString> FUNCTION
 %token <myString> BEGIN_PARAMS
@@ -125,11 +125,23 @@ function:           FUNCTION IDENT SEMICOLON params
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
                             // funcName($2);
                             // CodeBlock block = *($3);
-                            CodeBlock
-                            ($4)->push_front("func " + *($2));
-                            ($4)->shipCode();
+                            CodeBlock block;
+                            // ($4)->push_front("func " + *($2));
+                            block.push_back("func " + *($2));
+                            // ($6)->shipCode();
+                            // block = block + *($4) + *($6);
+                            // block.shipCode();
+                            // genCode(block.getVal());
+                            // genCode("************");
+                            // genCode(($6)->getVal());
+                            // ($6)->shipCode();
+                            // genCode("************");
+
+                            block = block + *($4) + *($6) + *($9) + *($11);
+                            block.push_back("endfunc");
+                            block.shipCode();
+
                             // cerr << "block " << block.isNull() << endl;
-                            genCode("endfunc\n");
                             func();
                         }
                 ;
@@ -158,7 +170,9 @@ declarations:       /* empty */
                         {
                             /*printf("declarations -> declaration SEMICOLON declarations\n");*/
                             // ($1)->shipCode();
-                            $$ = $1;
+                            CodeBlock block;
+                            block = *($1) + *($3);
+                            $$ = new CodeBlock(block);
                         }
                 ;
 
@@ -167,9 +181,10 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                             /*printf("delcaration -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");*/
                             CodeBlock temp;
                             if (addTable(*($1))) {
-                                temp.push_back(". [] " + *($1) + ", " + *($6));
+                                temp.push_back(".[] " + *($1) + ", " + *($6));
                                 temp.setVal(*($1));
                             };
+                            temp += *($2);
                             $$ = new CodeBlock(temp);
                         }
                 |   IDENT idents COLON INTEGER                                                     
@@ -180,6 +195,7 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                                 temp.push_back(". " + *($1));
                                 temp.setVal(*($1));
                             };
+                            temp += *($2);
                             $$ = new CodeBlock(temp);
                         }
                 ;
@@ -187,12 +203,13 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
 idents:             /* empty */         
                         {
                             /*printf("idents -> epsilon\n");*/
-                            $$ = new CodeBlock()
+                            $$ = new CodeBlock();
                         }
                 |   COMMA IDENT idents  
                         {
                             /*printf("idents -> COMMA IDENT idents\n");*/
                             CodeBlock temp;
+                            temp = *($3);
                             if (addTable(*($2))) {
                                 temp.push_back(". " + *($2));
                             };
@@ -208,36 +225,40 @@ statements:         /* empty */
                 |   statement SEMICOLON statements  
                         {
                             /*printf("statements -> statement SEMICOLON statements\n");*/
-                            $$ = $1;
+                            CodeBlock block;
+                            block = *($1) + *($3);
+                            $$ = new CodeBlock(block);
                         }
                 ;
 
 statement:          var ASSIGN expression                                                                       
                         {
                             /*printf("statement -> var ASSIGN expression\n");*/
-                            CodeBlock tempBlock;
-                            if (exist(*($1)) && exist(*($3))) {             //if both variables exist, then simple assign statement
-                                tempBlock.push_back("= " + *($1) + ", " + *($3));
-                            } else if (!exist(*($1)) && exist(*($3))) {     //if left side is an array var and right side is not
-                                string code = *($1);
-                                string toAppend = *($3);
-                                code.insert(0, "[] = ");
+                            CodeBlock block;
+                            block = *($3);
+                            if (exist(($1)->getVal()) && exist(($3)->getVal())) {             //if both variables exist, then simple assign statement
+                                block.push_back("= " + ($1)->getVal() + ", " + ($3)->getVal());
+                            } else if (!exist(($1)->getVal()) && exist(($3)->getVal())) {     //if left side is an array var and right side is not
+                                string code = ($1)->getVal();
+                                string toAppend = ($3)->getVal();
+                                code.insert(0, "[]= ");
                                 code.append(", " + toAppend);
-                                tempBlock.push_back(code);
+                                block.push_back(code);
                             } 
-                            $$ = new CodeBlock(tempBlock);
+                            $$ = new CodeBlock(block);
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/                            
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
-                            string skiplabel = newLabel();
+                            string skipLabel = newLabel();
                             ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
                             ($2)->push_back(":= " + skipLabel);
                             ($2)->push_back(": " + execLabel);
-                            tempBlock = *($2) + *($4) + *(6);
+                            tempBlock = *($2) + *($4) + *($6);
                             tempBlock.push_back(": " + skipLabel);
+                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
@@ -248,12 +269,14 @@ statement:          var ASSIGN expression
                             */
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
-                            string skiplabel = newLabel();
+                            string skipLabel = newLabel();
+
                             ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
                             ($2)->push_back(":= " + skipLabel);
                             ($2)->push_back(": " + execLabel);
                             ($8)->push_front(": " + skipLabel);
-                            tempBlock = *($2) + *($4) + *(6) + *($8) + *($10);
+                            tempBlock = *($2) + *($4) + *($6) + *($8) + *($10);
+                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
@@ -261,7 +284,7 @@ statement:          var ASSIGN expression
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
-                            string skiplabel = newLabel();
+                            string skipLabel = newLabel();
                             string loopLabel = newLabel();
                             ($2)->push_front(": " + loopLabel);
                             ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
@@ -269,7 +292,8 @@ statement:          var ASSIGN expression
                             ($2)->push_back(": " + execLabel);
                             ($6)->push_back(":= " + loopLabel);
                             ($6)->push_back(": " + skipLabel);
-                            tempBlock = *($2) + *($4) + *(6);
+                            tempBlock = *($2) + *($4) + *($6);
+                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr
@@ -280,24 +304,26 @@ statement:          var ASSIGN expression
                             // string loopLabel = newLabel();
                             ($3)->push_front(": " + execLabel);
                             ($8)->push_back("?:= " + execLabel + ", " + ($8)->getVal());
-                            tempBlock = *($3) + *($5) + *(8);
+                            tempBlock = *($3) + *($5) + *($8);
+                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   READ var vars                                                                               
                         {
                             /*printf("statement ->  READ var vars\n");*/
                             CodeBlock tempBlock;
-                            if (!exist(*($2))) {
-                                tempBlock.push_back(".[]< " + *($2));
+                            tempBlock = *($2) + *($3);
+                            if (!exist(($2)->getVal())) {
+                                tempBlock.push_back(".[]< " + ($2)->getVal());
                             } else {
-                                tempBlock.push_back(".< " + *($2));
+                                tempBlock.push_back(".< " + ($2)->getVal());
                             }
 
-                            if (($3)->compare("") != 0) {
-                                if (!exist(*($3))) {
-                                    tempBlock.push_back(".[]< " + *($3));
+                            if (!($3)->isNull()) {
+                                if (!exist(($3)->getVal())) {
+                                    tempBlock.push_back(".[]< " + ($3)->getVal());
                                 } else {
-                                    tempBlock.push_back(".< " + *($3));
+                                    tempBlock.push_back(".< " + ($3)->getVal());
                                 }
                             }
                             $$ = new CodeBlock(tempBlock);
@@ -306,17 +332,18 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> WRITE var vars\n");*/
                             CodeBlock tempBlock;
-                            if (!exist(*($2))) {
-                                tempBlock.push_back(".[]> " + *($2));
+                            tempBlock = *($2) + *($3);
+                            if (!exist(($2)->getVal())) {
+                                tempBlock.push_back(".[]> " + ($2)->getVal());
                             } else {
-                                tempBlock.push_back(".> " + *($2));
+                                tempBlock.push_back(".> " + ($2)->getVal());
                             }
 
-                            if (($3)->compare("") != 0) {
-                                if (!exist(*($3))) {
-                                    tempBlock.push_back(".[]> " + *($3));
+                            if (!($3)->isNull()) {
+                                if (!exist(($3)->getVal())) {
+                                    tempBlock.push_back(".[]> " + ($3)->getVal());
                                 } else {
-                                    tempBlock.push_back(".> " + *($3));
+                                    tempBlock.push_back(".> " + ($3)->getVal());
                                 }
                             }
                             $$ = new CodeBlock(tempBlock);
@@ -325,81 +352,45 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> CONTINUE\n");*/
                             //THIS WOULD BE A GOTO STATEMENT
-                            // genCode(":= " + soft_pop());
-
+                            CodeBlock temp;
+                            string label = newLabel();
+                            temp.push_back_label(label);
+                            temp.push_back(":= " + label);
+                            $$ = new CodeBlock(temp);
                         }
                 |   RETURN expression                                                                           
                         {
                             /*printf("statement -> RETURN expression\n");*/
-                            genCode("ret " + *($2));
-                            // $$ = new string();
+                            CodeBlock temp;
+                            temp = *($2);
+                            temp.push_back("ret " + ($2)->getVal());
+                            $$ = new CodeBlock(temp);
                         }
                 ;
 
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
-                            if (($2)->compare("") != 0) {           //if an bool_expression loop exists
-                                //local vars
-                                string code = *($2);
+                            if (!($2)->isNull()) {           //if an bool_expression loop exists
+                                string code = ($2)->getVal();
                                 string temp = newTemp();
-
-                                //only applies to local code
-                                code.insert(1, " " + temp + ", " + *($1));
-                                genCode(code);
-
-                                // string execLabel = newLabel();
-                                // string skipLabel = newLabel();
-                                // genCode("?:= " + execLabel + ", " + temp);
-                                // genCode("************");
-                                // genCode(":= " + skipLabel);
-                                // genCode(": " + execLabel);
-                                //"return" code
-                                $$ = new string(temp);
+                                CodeBlock block;
+                                block.push_back(". " + temp);
+                                block += *($1) + *($2);
+                                code.insert(2, " " + temp + ", " + ($1)->getVal());
+                                block.push_back(code);
+                                block.setVal(temp);
+                                $$ = new CodeBlock(block);
                             } else {                        //if expression loop does not exist; i.e. just a number
-                                // string execLabel = newLabel();
-                                // string skipLabel = newLabel();
-                                // genCode("?:= " + execLabel + ", " + *($1));
-                                // genCode("^^^^^^^^^^^^^");
-                                // genCode(":= " + skipLabel);
-                                // genCode(": " + execLabel);
-                                // genCode("why am I getting a k? " + *($1));
-                                //"return" code
                                 $$ = $1;
                             }
-                            // $$ = $1;
-
-                            // string execLabel = newLabel();
-                            // string skipLabel = newLabel();
-                            // string checkLabel = pop_goto();
-                            // if (checkLabel.compare("") != 0) {
-                            //     execLabel = checkLabel;
-                            //     genCode("?:= " + execLabel + ", " + temp);
-                            // } else {
-                            //     genCode("?:= " + execLabel + ", " + temp);
-                            //     genCode(":= " + skipLabel);
-                            //     genCode(": " + execLabel);
-                            //     push_goto(skipLabel);
-                            //     $$  = new string(skipLabel);
-                            // }
-
-                            // if (($2)->compare("") != 0) {
-                            //     string temp = newTemp();
-                            //     string code = *($2);
-                            //     code.insert(2, " " + temp + ", " + *($1));
-                            //     genCode(code);
-                            //     $$ = new string(temp);
-                            // } else {
-                            //     $$ = $1;
-                            // }
                         }
                 ;
 
 bool_expressions:   /* empty */                                         
                         {
                             /*printf("bool_expressions -> epsilon\n");*/
-                            //MAY NOT NEED BELOW
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   OR relation_and_expr bool_expressions               
                         {
@@ -408,21 +399,26 @@ bool_expressions:   /* empty */
                             //declare base string to "return"
                             string base = (string) "||" +  (string) ", ";
 
-                            if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                            if (!($3)->isNull()) {   //expression loop is not epsilon
+                                CodeBlock block;
+                                block = *($2) + *($3);
                                 //store addition result into generated temp
                                 string temp = newTemp();
+                                block.push_back(". " + temp);
                                 //code returned by the loop that is NOT empty
-                                string code = *($3);
+                                string code = ($3)->getVal();
                                 //need to add current $2 and $3 together and store in generated temp
-                                code.insert(2, " " + temp + ", " + *($2));
-                                //generate code
-                                genCode(code);
+                                code.insert(2, " " + temp + ", " + ($2)->getVal());
+                                block.push_back(code);
+                                block.setVal(base + temp);
                                 //now "return" the base + temp
                                 //value of expression generated above is in the generated temp
-                                $$ = new string(base + temp);
+                                $$ = new CodeBlock(block);
                             } else {                        //expression loop is epsilon
-                                //"return" base + $2
-                                $$ = new string(base + *($2));
+                                CodeBlock block;
+                                block = *($2);
+                                block.setVal(base + ($2)->getVal());
+                                $$ = new CodeBlock(block);
                             }
                         }
                 ;
@@ -430,14 +426,18 @@ bool_expressions:   /* empty */
 relation_and_expr:      relation_expr relation_and_expressions          
                             {
                                 /*printf("relation_and_expr -> relation_expr relation_and_expressions\n");*/
-                                if (($2)->compare("") != 0) {
+                                if (!($2)->isNull()) {
                                     //local vars
                                     string temp = newTemp();
-                                    string code = *($2);
+                                    string code = ($2)->getVal();
+                                    CodeBlock block;
+                                    block.push_back(". " + temp);
+                                    block += *($1) + *($2);
                                     //insert code 
-                                    code.insert(2, temp + ", " + *($1));
-                                    genCode(code);
-                                    $$ = new string(temp);
+                                    code.insert(2, " " + temp + ", " + ($1)->getVal());
+                                    block.push_back(code);
+                                    block.setVal(temp);
+                                    $$ = new CodeBlock(block);
                                 } else {
                                     $$ = $1;
                                 }
@@ -447,7 +447,7 @@ relation_and_expr:      relation_expr relation_and_expressions
 relation_and_expressions:   /* empty */                                 
                                 {
                                     /*printf("relation_and_expressions -> epsilon\n");*/
-                                    $$ = new string("");
+                                    $$ = new CodeBlock();
                                 }
                         |   AND relation_expr relation_and_expressions  
                                 {
@@ -455,53 +455,43 @@ relation_and_expressions:   /* empty */
                                     //declare base string to "return"
                                     string base = (string) "&&" +  (string) ", ";
 
-                                    if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                                    if (!($3)->isNull()) {   //expression loop is not epsilon
+                                        CodeBlock block;
+                                        block = *($2) + *($3);
                                         //store addition result into generated temp
                                         string temp = newTemp();
+                                        block.push_back(". " + temp);
                                         //code returned by the loop that is NOT empty
-                                        string code = *($3);
+                                        string code = ($3)->getVal();
                                         //need to add current $2 and $3 together and store in generated temp
-                                        code.insert(2, " " + temp + ", " + *($2));
-                                        //generate code
-                                        genCode(code);
+                                        code.insert(2, " " + temp + ", " + ($2)->getVal());
+                                        block.push_back(code);
+                                        block.setVal(base + temp);
                                         //now "return" the base + temp
                                         //value of expression generated above is in the generated temp
-                                        $$ = new string(base + temp);
+                                        $$ = new CodeBlock(block);
                                     } else {                        //expression loop is epsilon
                                         //"return" base + $2
-                                        $$ = new string(base + *($2));
+                                        CodeBlock block;
+                                        block = *($2);
+                                        block.setVal(base + ($2)->getVal());
+                                        $$ = new CodeBlock(block);
                                     }
                                 }
                         ;
 relation_expr:              expression comp expression      
                                 {
                                     /*printf("relation_expr -> expression comp expression\n");*/
-                                    if (exist(*($1)) && exist(*($3))) {
-                                        string temp = newTemp();
-                                        genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
-                                        $$ = new string(temp);
-
-                                        // string execLabel = newLabel();
-                                        // string skipLabel = newLabel();
-                                        // string checkLabel = pop_goto();
-                                        // if (checkLabel.compare("") != 0) {
-                                        //     execLabel = checkLabel;
-                                        //     genCode("?:= " + execLabel + ", " + temp);
-                                        // } else {
-                                        //     genCode("?:= " + execLabel + ", " + temp);
-                                        //     genCode(":= " + skipLabel);
-                                        //     genCode(": " + execLabel);
-                                        //     push_goto(skipLabel);
-                                        //     $$  = new string(skipLabel);
-                                        // }
-                                                                                
-                                    } else {
-                                        cerr << "Variable does not exist" << endl;
-                                    }
-                                    
+                                    CodeBlock block;
+                                    block = *($1) + *($3);
+                                    string temp = newTemp();
+                                    block.push_back(". " + temp);
+                                    block.push_back(*($2) + temp + ", " + ($1)->getVal() + ", " + ($3)->getVal());
+                                    block.setVal(temp);
+                                    $$ = new CodeBlock(block);                                   
                                 }
-                        |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/ $$ = new string("1");}
-                        |   FALSE                           {/*printf("relation_expr -> FALSE\n");*/ $$ = new string("0");}
+                        |   TRUE                            {/*printf("relation_expr -> TRUE\n");*/ $$ = new CodeBlock("1");}
+                        |   FALSE                           {/*printf("relation_expr -> FALSE\n");*/ $$ = new CodeBlock("0");}
                         |   L_PAREN bool_expr R_PAREN       
                                 {
                                     /*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/
@@ -510,40 +500,29 @@ relation_expr:              expression comp expression
                         |   NOT expression comp expression  
                                 {
                                     /*printf("relation_expr -> NOT expression comp expression\n");*/
-
-                                    // if (exist(*($1)) && exist(*($3))) {
-                                    //     string temp = newTemp();
-                                    //     string notTemp = newTemp();
-                                    //     genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
-                                    //     // $$ = new string(temp);
-                                    //     genCode("! " + notTemp + ", " + temp);
-                                    //     string execLabel = newLabel();
-                                    //     string skipLabel = newLabel();
-                                    //     string checkLabel = pop_goto();
-
-                                    //     if (checkLabel.compare("") != 0) {
-                                    //         execLabel = checkLabel;
-                                    //         genCode("?:= " + execLabel + ", " + notTemp);
-                                    //     } else {
-                                    //         genCode("?:= " + execLabel + ", " + notTemp);
-                                    //         genCode(":= " + skipLabel);
-                                    //         genCode(": " + execLabel);
-                                    //         push_goto(skipLabel);
-                                    //         $$  = new string(skipLabel);
-                                    //     }
-                                    //     $$ = new string(skipLabel);
-                                    // } else {
-                                    //     cerr << "Variable does not exist" << endl;
-                                    // }
+                                    CodeBlock block;
+                                    block = *($2) + *($4);
+                                    string temp = newTemp();
+                                    block.push_back(". " + temp);
+                                    string notTemp = newTemp();
+                                    block.push_back(". " + notTemp);
+                                    block.push_back(*($3) + temp + ", " + ($2)->getVal() + ", " + ($4)->getVal());
+                                    block.push_back("! " + notTemp + ", " + temp);
+                                    block.setVal(notTemp);
+                                    $$ = new CodeBlock(block);                                   
                                 }
-                        |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new string("0");}
-                        |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/ $$ = new string("1");}
+                        |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new CodeBlock("0");}
+                        |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/ $$ = new CodeBlock("1");}
                         |   NOT L_PAREN bool_expr R_PAREN   
                                 {
                                     /*printf("relation_expr -> NOT L_PAREN b ool_expr R_PAREN\n");*/
+                                    CodeBlock block;
+                                    block = *($3);
                                     string temp = newTemp();
-                                    genCode("! " + temp + ", " + *($3));
-                                    $$ = new string(temp);
+                                    block.push_back(". " + temp);
+                                    block.push_back("! " + temp + ", " + ($3)->getVal());
+                                    block.setVal(temp);
+                                    $$ = new CodeBlock(block);
 
                                 }
                         ;
@@ -560,16 +539,19 @@ expression:         multiplicative_expr expression_loop
                         {
                             /*printf("expression -> multiplicative_expr expression_loop\n");*/
 
-                            if (($2)->compare("") != 0) {   //if an expression loop exists
+                            if (!($2)->isNull()) {   //if an expression loop exists
                                 //local vars
-                                string code = *($2);
+                                CodeBlock block;
+                                block = *($1) + *($2);
+                                string code = ($2)->getVal();
                                 string temp = newTemp();
-
+                                block.push_back(". " + temp);
                                 //only applies to local code
-                                code.insert(1, " " + temp + ", " + *($1));
-                                genCode(code);
+                                code.insert(1, " " + temp + ", " + ($1)->getVal());
+                                block.push_back(code);
+                                block.setVal(temp);
                                 //"return" code
-                                $$ = new string(temp);
+                                $$ = new CodeBlock(block);
                             } else {                        //if expression loop does not exist; i.e. just a number
                                 $$ = $1;
                             }
@@ -579,7 +561,7 @@ expression:         multiplicative_expr expression_loop
 expression_loop:    /* empty */                                 
                         {
                             /*printf("expression_loop -> epsilon\n");*/
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   ADD multiplicative_expr expression_loop     
                         {
@@ -588,21 +570,26 @@ expression_loop:    /* empty */
                             //declare base string to "return"
                             string base = (string) "+" +  (string) ", ";
 
-                            if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                            if (!($3)->isNull()) {   //expression loop is not epsilon
+                                CodeBlock block;
+                                block = *($2) + *($3);
                                 //store addition result into generated temp
                                 string temp = newTemp();
+                                block.push_back(". " + temp);
                                 //code returned by the loop that is NOT empty
-                                string code = *($3);
+                                string code = ($3)->getVal();
                                 //need to add current $2 and $3 together and store in generated temp
-                                code.insert(1, " " + temp + ", " + *($2));
-                                //generate code
-                                genCode(code);
+                                code.insert(1, " " + temp + ", " + ($2)->getVal());
+                                block.push_back(code);
+                                block.setVal(base + temp);
                                 //now "return" the base + temp
                                 //value of expression generated above is in the generated temp
-                                $$ = new string(base + temp);
+                                $$ = new CodeBlock(block);
                             } else {                        //expression loop is epsilon
                                 //"return" base + $2
-                                $$ = new string(base + *($2));
+                                CodeBlock block = *($2);
+                                block.setVal(base + ($2)->getVal());
+                                $$ = new CodeBlock(block);
                             }
                         }
                 |   SUB  multiplicative_expr expression_loop    
@@ -612,21 +599,27 @@ expression_loop:    /* empty */
                             //declare base string to "return"
                             string base = (string) "-" +  (string) ", ";
 
-                            if (($3)->compare("") != 0) {   //expression loop is not epsilon
+                            if (!($3)->isNull()) {   //expression loop is not epsilon
+                                CodeBlock block;
+                                block = *($2) + *($3);
                                 //store addition result into generated temp
                                 string temp = newTemp();
+                                block.push_back(". " + temp);
                                 //code returned by the loop that is NOT empty
-                                string code = *($3);
+                                string code = ($3)->getVal();
                                 //need to add current $2 and $3 together and store in generated temp
-                                code.insert(1, " " + temp + ", " + *($2));
+                                code.insert(1, " " + temp + ", " + ($2)->getVal());
                                 //generate code
-                                genCode(code);
+                                block.push_back(code);
+                                block.setVal(base + temp);
                                 //now "return" the base + temp
                                 //value of expression generated above is in the generated temp
-                                $$ = new string(base + temp);
+                                $$ = new CodeBlock(block);
                             } else {                        //expression loop is epsilon
                                 //"return" base + $2
-                                $$ = new string(base + *($2));
+                                CodeBlock block = *($2);
+                                block.setVal(base + ($2)->getVal());
+                                $$ = new CodeBlock(block);
                             }
                         }
                 ;
@@ -637,7 +630,9 @@ expressions:        expression COMMA expressions
                             /*printf("expressions -> expression COMMA expressions\n");*/
 
                             //not sure if this is right
-                            $$ = $1;
+                            CodeBlock block;
+                            block = *($1) + *($3);
+                            $$ = new CodeBlock(block);
                         }
                 |   expression                      
                         {
@@ -649,48 +644,76 @@ expressions:        expression COMMA expressions
                             /*printf("expressions -> epsilon\n");*/
 
                             //might need later but works w/o it atm
-                            // $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 ;
 
 terms:              /* empty */             
                         {
                             /*printf("terms -> epsilon\n");*/
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   MOD term terms          
                         {
                             /*printf("terms -> MOD term terms\n");*/
-                            string temp = (string) "%" + (string) ", " + *($2);
-                            $$ = new string(temp);
+                            CodeBlock block;
+                            block = *($2) + *($3);
+                            if (!($3)->isNull()) {
+                                string code = ($3)->getVal();
+                                code.insert(1, " " + ($2)->getVal());
+                                block.push_back(code);
+                            }
+                            string temp = (string) "%" + (string) ", " + ($2)->getVal();
+                            block.setVal(temp);
+                            $$ = new CodeBlock(block);
                         }
                 |   DIV term terms          
                         {
                             /*printf("terms -> DIV term terms\n");*/
-                            string temp = (string) "/" + (string) ", " + *($2);
-                            $$ = new string(temp);
+                            CodeBlock block;
+                            block = *($2) + *($3);
+                            if (!($3)->isNull()) {
+                                string code = ($3)->getVal();
+                                code.insert(1, " " + ($2)->getVal());
+                                block.push_back(code);
+                            }
+                            string temp = (string) "/" + (string) ", " + ($2)->getVal();
+                            block.setVal(temp);
+                            $$ = new CodeBlock(block);
                         }
                 |   MULT term terms         
                         {
                             /*printf("terms -> MULT term terms\n");*/
-                            string temp = (string) "*" + (string) ", " + *($2);
-                            $$ = new string(temp);
+                            CodeBlock block;
+                            block = *($2) + *($3);
+                            if (!($3)->isNull()) {
+                                string code = ($3)->getVal();
+                                code.insert(1, " " + ($2)->getVal());
+                                block.push_back(code);
+                            }
+                            string temp = (string) "*" + (string) ", " + ($2)->getVal();
+                            block.setVal(temp);
+                            $$ = new CodeBlock(block);
                         }
                 ;
 
 multiplicative_expr:        term terms      
                                 {
                                     /*printf("multiplicative_expr -> term terms\n");*/
-                                    if (($2)->compare("") != 0) {
+                                    if (!($2)->isNull()) {
                                         //local var
-                                        string code = *($2);
+                                        CodeBlock block;
+                                        block = *($1) + *($2);
+                                        string code = ($2)->getVal();
                                         string temp = newTemp();
+                                        block.push_back(". " + temp);
                                         //inserting code
-                                        code.insert(1," " + temp + ", " + *($1));
-                                        genCode(code);
+                                        code.insert(1," " + temp + ", " + ($1)->getVal());
+                                        block.push_back(code);
+                                        block.setVal(temp);
 
                                         //"return" statement
-                                        $$ = new string(temp);
+                                        $$ = new CodeBlock(block);
                                     } else {
                                         $$ = $1;
                                     }
@@ -704,14 +727,19 @@ term:               IDENT L_PAREN expressions R_PAREN
                             //THIS IS A FUNCTION CALL
                             //SHOULD HANDLE MAYBE AT THE END WITH A STACK OR SOMETHING?
                             //IDK ATM
+                            CodeBlock block;
+                            block = *($3);
                             string temp = newTemp();
+                            block.push_back(". " + temp);
                             string paramTemp = newTemp();
-                            string expr = *($3);
-                            genCode("= " + paramTemp + ", " + expr);
-                            genCode("param " + paramTemp);
+                            block.push_back(". " + paramTemp);
+                            string expr = ($3)->getVal();
+                            block.push_back("= " + paramTemp + ", " + expr);
+                            block.push_back("param " + paramTemp);
                             string code = "call " + *($1) + ", " + temp;
-                            genCode(code);
-                            $$ = new string(temp);
+                            block.push_back(code);
+                            block.setVal(temp);
+                            $$ = new CodeBlock(block);
                             //TODO: ADD GO TO STATEMENT
                         }
                 |   NUMBER                              
@@ -719,19 +747,29 @@ term:               IDENT L_PAREN expressions R_PAREN
                             /*printf("term -> NUMBER\n");*/
 
                             //generate temp
+                            CodeBlock block;
                             string temp = newTemp();
+                            block.push_back(". " + temp);
                             //generate the code to store $1 into temp
-                            genCode("= " + temp + ", " + *($1));
+                            block.push_back("= " + temp + ", " + *($1));
+                            block.setVal(temp);
                             //"return" temp b/c it now stores the number
-                            $$ = new string(temp);
+                            $$ = new CodeBlock(block);
                         }
                 |   var                                 
                         {
                             /*printf("term -> var\n");*/
-                            if (!exist(*($1))) {        //if $1 isn't just an identifier
-                                $$ = new string(arrHandler(*($1)));
+                            CodeBlock block;
+                            block = *($1);
+                            if (!exist(($1)->getVal())) {        //if $1 isn't just an identifier
+                                string temp = newTemp();
+                                block.push_back(". " + temp);
+                                block.push_back("=[] " + temp + ", " + ($1)->getVal());
+                                block.setVal(temp);
+                                $$ = new CodeBlock(block);
                             } else {    
-                                $$ = $1;
+                                block.setVal(($1)->getVal());
+                                $$ = new CodeBlock(block);
                             }
                         }
                 |   L_PAREN expression R_PAREN          
@@ -744,34 +782,43 @@ term:               IDENT L_PAREN expressions R_PAREN
                             /*printf("term -> SUB NUMBER\n");*/
 
                             //have to static cast cause compiler optimizes to char* or something
-                            $$ = new string( (string) "-" + *($2) );
+                            CodeBlock block;
+                            block.setVal((string) "-" + *($2));
+                            $$ = new CodeBlock(block);
                         }
                 |   SUB var                             
                         {
                             /*printf("term -> SUB var\n");*/
-
-                             $$ = new string( (string) "-" + *($2) );
+                            CodeBlock block;
+                            block = *($2);
+                            block.setVal((string) "-" + ($2)->getVal());
+                            $$ = new CodeBlock(block);
                         }
                 |   SUB L_PAREN expression R_PAREN      
                         {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
                             //SUB A FUNCTION CALL
-                            
+                            CodeBlock block = *($3);
+                            block.setVal((string) "-" + ($3)->getVal());
+                            $$ = new CodeBlock(block);
                         }
                 ;
 
 var:                IDENT                                                 
                         {
                             /*printf("var -> IDENT\n");*/
-                            $$ = $1;
+                            $$ = new CodeBlock(*($1));
                         }
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    
                         {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
                             //arr is $1; index is $3
-                            string base = *($1) + ", " + *($3);
+                            CodeBlock block;
+                            block = *($3);
+                            string base = *($1) + ", " + ($3)->getVal();
+                            block.setVal(base);
                             //"return" temp b/c it now stores the array value
-                            $$ = new string(base);
+                            $$ = new CodeBlock(block);
 
                         }
                 ;
@@ -779,12 +826,14 @@ var:                IDENT
 vars:               /* empty */                 
                         {
                             /*printf("vars -> epsilon\n");*/
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   COMMA var vars              
                         {
                             /*printf("vars -> COMMA var vars \n");*/
-                            $$ = $2;
+                            CodeBlock block;
+                            block = *($2) + *($3);
+                            $$ = new CodeBlock(block);
                         }
                 ;
 

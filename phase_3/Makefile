@@ -7,7 +7,7 @@ flex: mini_l.l
 	flex mini_l.l
 
 mini_l: bison flex
-	g++ -o compile lex.yy.c mini_l.tab.c main.cc -g -ansi -Wno-write-strings -std=c++11 -w
+	g++ -o compile lex.yy.c mini_l.tab.c main.cc -g -ansi -Wno-write-strings -std=c++11 -w -Wfatal-errors
 
 output: mini_l
 	cat ../tests/fibonacci.min.txt | ./compile > _fib.txt

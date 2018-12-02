@@ -1,28 +1,33 @@
-##  primes.min: compute primes using Sieve of Eratosthenes
-##  (http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
-##
-##  Compute primes up to a specified n by crossing out multiples of successively
-##  larger primes in a boolean array.  The array stores a[k] = 1 if k is composite
-##  (not prime), and a[k] = 0 if k is not divisible by the divisors considered
-##  thus far.
-## 
-##  Requires a specified integer n as input, assumed to be < 1000.
-
 function main;
 beginparams
 endparams
 
 beginlocals
 
-n : integer;
-a : array[1000] of integer;	## prime candidates array
-i, j : integer;
-x, sqrt_n : integer;
+  n : integer;
+  i, j, k: integer;
+  t : array [20] of integer;
 
 endlocals
 
 beginbody	## main program
-    do beginloop
-        n := 2;
-    endloop while ((n > 2) and (n < 10) and (n < 7));
+
+  if i<j and j < n and i>=0 then
+     t[i] := i * 2;
+     t[j] := j * 2;
+     k := t[i];
+     t[i] := t[j];
+     t[j] := k;
+  else
+     while  i >= j or false 
+       beginloop
+        k := (1 + i - j ) % 3;
+        i := i - 1;
+        if k > 1 then
+             continue;
+        endif;
+        write k;
+     endloop;
+  endif;
+
 endbody

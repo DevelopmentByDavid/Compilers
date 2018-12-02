@@ -44,11 +44,7 @@ extern void print();
 extern void func();
 extern void genCode(string );
 extern void undeclared(string);
-extern string arrHandler(string);
 extern string newLabel();
-extern void push_goto(string);
-extern string pop_goto();
-extern string soft_pop();
 
 //THIS MUST BE INCLUDED LAST FOR STUFF TO WORK
 //IT'S ANNOYING BUT NECESSARY

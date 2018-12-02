@@ -44,10 +44,6 @@ int main(int argc, char **argv) {
 
 int exist(string toCheck) {
     for (list<string>::iterator it = SYMBOLTABLE.begin(); it != SYMBOLTABLE.end(); ++it){
-        if (toCheck.compare("fibonacci") == 0) {
-            // cout << "EXIST " << *it << endl;
-            // cout << toCheck.compare(*it) << endl;
-        }
         if (toCheck.compare(*it) == 0) return 1;
     }
     return 0;
@@ -64,7 +60,7 @@ int addTable(string toAdd) {
 void print() {
     for (list<fn>::iterator it = FUNCTIONS.begin(); it != FUNCTIONS.end(); ++it){
         for (list<string>::iterator itt = it->code.begin(); itt != it->code.end(); ++itt) {
-            cout << *itt;
+            cout << *itt << endl;
         }
     }
 }
@@ -72,8 +68,6 @@ void print() {
 void func() {
     //push current stuff into the new fn
     fn temp;
-
-    // CODE.push_front("func " + funcName);
 
     temp.code = CODE;
     temp.symbolTable = SYMBOLTABLE;
@@ -94,7 +88,7 @@ string newTemp() {
     temp << VAR_COUNT;
     VAR_COUNT++;
     addTable(temp.str());
-    genCode(". " + temp.str());
+    // genCode(". " + temp.str());
     return temp.str();
 }
 
@@ -104,21 +98,12 @@ void undeclared(string foo) {
     }
 }
 
-string arrHandler(string arr) {     //arr in form of "var, index"
-    string temp = newTemp();
-    genCode("= [] " + temp + ", " + arr);
-    return temp;
-}
-
 string newLabel() {
     stringstream temp;
     temp << LABEL_PREFIX;
     temp << LABEL_COUNT;
     LABEL_COUNT++;
     addTable(temp.str());
-    //don't want to genCode here b/c i want to manually place the labels
-    //where they should go inside the semantic actions
-    // genCode(": " + temp.str());
     return temp.str();
 }
 
@@ -129,16 +114,6 @@ string pop_goto() {
         return temp;
     }
     return "";
-}
-
-string soft_pop() {
-    if (!GOTO.empty()) {
-        return GOTO.top();
-    }
-}
-
-void push_goto(string toPush) {
-    GOTO.push(toPush);
 }
 
 // void addTable(string toAdd) {
