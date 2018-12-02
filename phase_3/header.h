@@ -14,6 +14,8 @@
 using namespace std;
 
 
+//forward decl
+class CodeBlock;
 
 // The following line suppresses an unused-function warning.
 #define YY_NO_UNPUT
@@ -35,12 +37,11 @@ using namespace std;
 #define _MULT   14
 #define _GT    15
 
-
 extern string newTemp();
 extern int addTable(string);
 extern int exist(string);
 extern void print();
-extern void func(string);
+extern void func();
 extern void genCode(string );
 extern void undeclared(string);
 extern string arrHandler(string);

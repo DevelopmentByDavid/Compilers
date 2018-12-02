@@ -1,29 +1,70 @@
 #include "header.h"
 
-class container {
+
+class CodeBlock {
     private:
-        list<string> curr_code;
-        string temp;
+        list<string *> curr_code;
+        string * returnVal;
     public:
-        container() {}
-        ~container() {}
+        CodeBlock() {
+            returnVal = new string("");
+        }
+        CodeBlock(CodeBlock &obj) {
+            // cerr << obj.getVal() << endl;
+            returnVal = new string(obj.getVal());
+            curr_code = obj.getCode();
+        }
+        ~CodeBlock() {
+            delete returnVal;
+        }
         void push_back(string arg) {
-            curr_code.push_back(arg);
+            string *copy = new string(arg);
+            curr_code.push_back(copy);
         }
         void push_front(string arg) {
-            curr_code.push_front(arg);
+            string *copy = new string(arg);
+            curr_code.push_front(copy);
         }
-        string getTemp() {
-            return temp;
+        string getVal() {
+            return *returnVal;
         }
-        void setTemp(string arg) {
-            temp = arg;
+        void setVal(string arg) {
+            delete returnVal;
+            returnVal = new string(arg);
+        }
+        list<string *> getCode() {
+            return curr_code;
         }
         void shipCode() {
-            stringstream k;
-            for (list<string>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
-                    k << *it << endl;
-            }           
-            genCode(k.str());
+            if (!curr_code.empty()) {
+                stringstream k;
+                for (list<string*>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
+                    k << **it << endl;
+                    // cerr << "ship" << **it << endl;
+                }
+                genCode(k.str());   
+            }
+            // if (*returnVal != "" && returnVal->length() > 1) {
+            //     genCode(*returnVal);
+            // } 
+        }
+        bool isNull() {
+            if (curr_code.empty() && *returnVal == "") {
+                return true;
+            }
+            return false;
+        }
+        CodeBlock operator = (CodeBlock &obj) {
+            CodeBlock ret;
+            if (!obj.isNull()) {
+                ret.returnVal = new string(obj.getVal());
+                ret.curr_code = obj.getCode();
+            }
+            return ret;
+        }
+        void manualDelete() {
+            for (list<string *>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
+                delete *it;
+            }
         }
 };

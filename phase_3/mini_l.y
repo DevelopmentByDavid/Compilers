@@ -13,7 +13,7 @@
 %union {
     string *myString;
     int myInt;
-    stringstream *ss;
+    CodeBlock *myBlock;
 }
 
 //start symbol
@@ -22,8 +22,8 @@
 %type <myString> program
 %type <myString> functions
 %type <myString> function
-%type <myString> declaration
-%type <myString> declarations
+%type <myBlock> declaration
+%type <myBlock> declarations
 %type <myString> statement
 %type <myString> statements
 %type <myString> bool_expr
@@ -38,10 +38,8 @@
 %type <myString> var
 %type <myString> vars
 %type <myString> idents
-%type <myString> fnName
-%type <myString> params
-%type <myString> pre_else
-%type <myString> begin_label
+%type <myBlock> fnName
+%type <myBlock> params
 
 %type <myString> bool_expressions
 %type <myString> relation_and_expressions
@@ -127,18 +125,26 @@ function:           fnName SEMICOLON params
                             /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
                             // funcName($2);
+                            // CodeBlock block = *($3);
+                            ($1)->shipCode();
+                            ($3)->shipCode();
+                            // cerr << "block " << block.isNull() << endl;
                             genCode("endfunc\n");
-                            func(*($1));
+                            func();
                         }
                 ;
 params:             BEGIN_PARAMS declarations END_PARAMS
                         {
-                            if (($2)->compare("") != 0) {
+                            if (!($2)->isNull()) {
                                 static int i = 0;
+                                CodeBlock tempBlock = *($2);
                                 stringstream temp;
-                                temp << "= " << *($2) << ", $" << i;
-                                genCode(temp.str());
+                                temp << "= " << ($2)->getVal() << ", $" << i;
                                 i++;
+                                tempBlock.push_back(temp.str());
+                                $$ = new CodeBlock(tempBlock);
+                            } else {
+                                $$ = new CodeBlock();
                             }
                         }
                 ;
@@ -148,20 +154,24 @@ fnName:             FUNCTION IDENT
                                 PUTTING THIS IN SEP RULE SO FUNCTION NAME IS 
                                 PUT INTO SYMBOL TABLE FIRST
                             */
-                            genCode("func " + *($2));
-                            addTable(*($2));
-                            $$ = $2;
+                            CodeBlock temp;
+                            temp.push_back("func " + *($2));
+                            $$ = new CodeBlock(temp);
+                            // genCode("func " + *($2));
+                            // addTable(*($2));
+                            // $$ = $2;
                         }
                 ;
 
 declarations:       /* empty */                         
                         {
                             /*printf("declarations -> epsilon\n");*/
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   declaration SEMICOLON declarations  
                         {
                             /*printf("declarations -> declaration SEMICOLON declarations\n");*/
+                            // ($1)->shipCode();
                             $$ = $1;
                         }
                 ;
@@ -169,18 +179,22 @@ declarations:       /* empty */
 declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER   
                         {
                             /*printf("delcaration -> IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");*/
+                            CodeBlock temp;
                             if (addTable(*($1))) {
-                                genCode(". [] " + *($1) + ", " + *($6));
+                                temp.push_back(". [] " + *($1) + ", " + *($6));
+                                temp.setVal(*($1));
                             };
-                            $$ = $1;
+                            $$ = new CodeBlock(temp);
                         }
                 |   IDENT idents COLON INTEGER                                                     
                         {
                             /*printf("declaration -> IDENT idents COLON INTEGER\n");*/
+                            CodeBlock temp;
                             if (addTable(*($1))) {
-                                genCode(". " + *($1));
+                                temp.push_back(". " + *($1));
+                                temp.setVal(*($1));
                             };
-                            $$ = $1;
+                            $$ = new CodeBlock(temp);
                         }
                 ;
 
@@ -243,7 +257,7 @@ statement:          var ASSIGN expression
                             genCode(": " + *($2));
                             pop_goto();
                         }
-                |   pre_else statement SEMICOLON statements ENDIF  
+                |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
                         {
                             /*
                                 printf("statement -> IF bool_expr THEN statement 
@@ -256,7 +270,7 @@ statement:          var ASSIGN expression
                             genCode(": " + *($2));
                             pop_goto();
                         }
-                |   DO BEGINLOOP begin_label statement SEMICOLON statements ENDLOOP WHILE bool_expr
+                |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr
                         {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
                         }
@@ -308,22 +322,6 @@ statement:          var ASSIGN expression
                         }
                 ;
 
-begin_label:         /*empty*/       
-                        {   
-                            string label = newLabel();
-                            genCode(": " + label);
-                            push_goto(label);
-                            $$ = new string(label);
-                        }
-                ;
-
-pre_else:           IF bool_expr THEN statement SEMICOLON statements ELSE
-                        {
-                            genCode(": " + *($2));
-                            // pop_goto();
-                        }
-                ;
-
 bool_expr:          relation_and_expr bool_expressions                 
                         {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
@@ -336,24 +334,24 @@ bool_expr:          relation_and_expr bool_expressions
                                 code.insert(1, " " + temp + ", " + *($1));
                                 genCode(code);
 
-                                string execLabel = newLabel();
-                                string skipLabel = newLabel();
-                                genCode("?:= " + execLabel + ", " + temp);
-                                genCode("************");
-                                genCode(":= " + skipLabel);
-                                genCode(": " + execLabel);
+                                // string execLabel = newLabel();
+                                // string skipLabel = newLabel();
+                                // genCode("?:= " + execLabel + ", " + temp);
+                                // genCode("************");
+                                // genCode(":= " + skipLabel);
+                                // genCode(": " + execLabel);
                                 //"return" code
-                                $$ = new string(skipLabel);
+                                $$ = new string(temp);
                             } else {                        //if expression loop does not exist; i.e. just a number
-                                string execLabel = newLabel();
-                                string skipLabel = newLabel();
-                                genCode("?:= " + execLabel + ", " + *($1));
-                                genCode("^^^^^^^^^^^^^");
-                                genCode(":= " + skipLabel);
-                                genCode(": " + execLabel);
+                                // string execLabel = newLabel();
+                                // string skipLabel = newLabel();
+                                // genCode("?:= " + execLabel + ", " + *($1));
+                                // genCode("^^^^^^^^^^^^^");
+                                // genCode(":= " + skipLabel);
+                                // genCode(": " + execLabel);
                                 // genCode("why am I getting a k? " + *($1));
                                 //"return" code
-                                $$ = new string(skipLabel);
+                                $$ = $1;
                             }
                             // $$ = $1;
 

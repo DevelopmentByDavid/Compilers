@@ -64,12 +64,12 @@ int addTable(string toAdd) {
 void print() {
     for (list<fn>::iterator it = FUNCTIONS.begin(); it != FUNCTIONS.end(); ++it){
         for (list<string>::iterator itt = it->code.begin(); itt != it->code.end(); ++itt) {
-            cout << *itt << endl;
+            cout << *itt;
         }
     }
 }
 
-void func(string funcName) {
+void func() {
     //push current stuff into the new fn
     fn temp;
 
