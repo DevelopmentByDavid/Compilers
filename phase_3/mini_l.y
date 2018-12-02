@@ -41,6 +41,7 @@
 %type <myString> fnName
 %type <myString> params
 %type <myString> pre_else
+%type <myString> begin_label
 
 %type <myString> bool_expressions
 %type <myString> relation_and_expressions
@@ -240,6 +241,7 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/                            
                             genCode(": " + *($2));
+                            pop_goto();
                         }
                 |   pre_else statement SEMICOLON statements ENDIF  
                         {
@@ -247,19 +249,16 @@ statement:          var ASSIGN expression
                                 printf("statement -> IF bool_expr THEN statement 
                                 SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");
                             */
-                            
                         }
                 |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
                         {
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
                             genCode(": " + *($2));
+                            pop_goto();
                         }
-                |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr                         
+                |   DO BEGINLOOP begin_label statement SEMICOLON statements ENDLOOP WHILE bool_expr
                         {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
-                            //MIGHT NEED TO CHANGE LABELING ORDER FOR DO WHILE
-                            genCode(": " + *($8));
-                            //NEED TO ADD A LABEL BEFORE THE DO BEGINS SO I CAN GO BACK TO IT
                         }
                 |   READ var vars                                                                               
                         {
@@ -299,7 +298,7 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> CONTINUE\n");*/
                             //THIS WOULD BE A GOTO STATEMENT
-                            // genCode(":= " + pop_goto());
+                            // genCode(":= " + soft_pop());
                         }
                 |   RETURN expression                                                                           
                         {
@@ -309,9 +308,19 @@ statement:          var ASSIGN expression
                         }
                 ;
 
+begin_label:         /*empty*/       
+                        {   
+                            string label = newLabel();
+                            genCode(": " + label);
+                            push_goto(label);
+                            $$ = new string(label);
+                        }
+                ;
+
 pre_else:           IF bool_expr THEN statement SEMICOLON statements ELSE
                         {
                             genCode(": " + *($2));
+                            // pop_goto();
                         }
                 ;
 
@@ -344,7 +353,17 @@ bool_expr:          relation_and_expr bool_expressions
                             //     //"return" code
                             //     $$ = new string(skipLabel);
                             // }
-                            $$ = $1;
+                            // $$ = $1;
+                            if (($2)->compare("") != 0) {
+                                string temp = newTemp();
+                                string code = *($2);
+                                code.insert(2, " " + temp + ", " + *($1));
+                                genCode("below");
+                                genCode(code);
+                                $$ = new string(temp);
+                            } else {
+                                $$ = $1;
+                            }
                         }
                 ;
 
@@ -425,10 +444,18 @@ relation_expr:              expression comp expression
                                         // $$ = new string(temp);
                                         string execLabel = newLabel();
                                         string skipLabel = newLabel();
-                                        genCode("?:= " + execLabel + ", " + temp);
-                                        genCode(":= " + skipLabel);
-                                        genCode(": " + execLabel);
-                                        $$ = new string(skipLabel);
+                                        string checkLabel = pop_goto();
+                                        if (checkLabel.compare("") != 0) {
+                                            execLabel = checkLabel;
+                                            genCode("?:= " + execLabel + ", " + temp);
+                                        } else {
+                                            genCode("?:= " + execLabel + ", " + temp);
+                                            genCode(":= " + skipLabel);
+                                            genCode(": " + execLabel);
+                                            push_goto(skipLabel);
+                                            $$  = new string(skipLabel);
+                                        }
+                                                                                
                                     } else {
                                         cerr << "Variable does not exist" << endl;
                                     }
@@ -441,10 +468,44 @@ relation_expr:              expression comp expression
                                     /*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/
                                     $$ = $2;
                                 }
-                        |   NOT expression comp expression  {/*printf("relation_expr -> NOT expression comp expression\n");*/}
+                        |   NOT expression comp expression  
+                                {
+                                    /*printf("relation_expr -> NOT expression comp expression\n");*/
+                                    if (exist(*($1)) && exist(*($3))) {
+                                        string temp = newTemp();
+                                        string notTemp = newTemp();
+                                        genCode(*($2) + temp + ", " + *($1) + ", " + *($3));
+                                        // $$ = new string(temp);
+                                        genCode("! " + notTemp + ", " + temp);
+                                        string execLabel = newLabel();
+                                        string skipLabel = newLabel();
+                                        string checkLabel = pop_goto();
+
+                                        if (checkLabel.compare("") != 0) {
+                                            execLabel = checkLabel;
+                                            genCode("?:= " + execLabel + ", " + notTemp);
+                                        } else {
+                                            genCode("?:= " + execLabel + ", " + notTemp);
+                                            genCode(":= " + skipLabel);
+                                            genCode(": " + execLabel);
+                                            push_goto(skipLabel);
+                                            $$  = new string(skipLabel);
+                                        }
+                                        $$ = new string(skipLabel);
+                                    } else {
+                                        cerr << "Variable does not exist" << endl;
+                                    }
+                                }
                         |   NOT TRUE                        {/*printf("relation_expr -> NOT TRUE\n");*/ $$ = new string("0");}
                         |   NOT FALSE                       {/*printf("relation_expr -> NOT FALSE\n");*/ $$ = new string("1");}
-                        |   NOT L_PAREN bool_expr R_PAREN   {/*printf("relation_expr -> NOT L_PAREN bool_expr R_PAREN\n");*/}
+                        |   NOT L_PAREN bool_expr R_PAREN   
+                                {
+                                    /*printf("relation_expr -> NOT L_PAREN b ool_expr R_PAREN\n");*/
+                                    string temp = newTemp();
+                                    genCode("! " + temp + ", " + *($3));
+                                    $$ = new string(temp);
+
+                                }
                         ;
 
 comp:               EQ      {/*printf("comp -> EQ\n");*/ $$ = new string("== ");}

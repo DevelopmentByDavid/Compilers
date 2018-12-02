@@ -10,16 +10,19 @@
 
 function main;
 beginparams
-	k : integer;
 endparams
+
 beginlocals
+
+n : integer;
+a : array[1000] of integer;	## prime candidates array
+i, j : integer;
+x, sqrt_n : integer;
+
 endlocals
-beginbody
-	if (k <= 1) then 
-        return 1;
-    else
-        return 2;
-    endif;
-	##return fibonacci(k - 1) + fibonacci(k - 2);
-endbody
+
+beginbody	## main program
+    do beginloop
+        n := 2;
+    endloop while ((n > 2) or (n < 10));
 endbody

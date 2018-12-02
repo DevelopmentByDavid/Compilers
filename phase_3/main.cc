@@ -123,9 +123,18 @@ string newLabel() {
 }
 
 string pop_goto() {
-    string temp = GOTO.top();
-    GOTO.pop();
-    return temp;
+    if (!GOTO.empty()) {
+        string temp = GOTO.top();
+        GOTO.pop();
+        return temp;
+    }
+    return "";
+}
+
+string soft_pop() {
+    if (!GOTO.empty()) {
+        return GOTO.top();
+    }
 }
 
 void push_goto(string toPush) {
