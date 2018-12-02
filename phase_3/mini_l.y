@@ -24,8 +24,8 @@
 %type <myString> function
 %type <myBlock> declaration
 %type <myBlock> declarations
-%type <myString> statement
-%type <myString> statements
+%type <myBlock> statement
+%type <myBlock> statements
 %type <myString> bool_expr
 %type <myString> relation_and_expr
 %type <myString> relation_expr
@@ -37,8 +37,7 @@
 %type <myString> term
 %type <myString> var
 %type <myString> vars
-%type <myString> idents
-%type <myBlock> fnName
+%type <myBlock> idents
 %type <myBlock> params
 
 %type <myString> bool_expressions
@@ -119,15 +118,16 @@ functions:          /* empty */              {/*printf("functions -> epsilon\n")
                         }
                 ;
 
-function:           fnName SEMICOLON params
+function:           FUNCTION IDENT SEMICOLON params
                     BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
                         {
                             /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
                             // funcName($2);
                             // CodeBlock block = *($3);
-                            ($1)->shipCode();
-                            ($3)->shipCode();
+                            CodeBlock
+                            ($4)->push_front("func " + *($2));
+                            ($4)->shipCode();
                             // cerr << "block " << block.isNull() << endl;
                             genCode("endfunc\n");
                             func();
@@ -146,20 +146,6 @@ params:             BEGIN_PARAMS declarations END_PARAMS
                             } else {
                                 $$ = new CodeBlock();
                             }
-                        }
-                ;
-fnName:             FUNCTION IDENT  
-                        {   
-                            /*
-                                PUTTING THIS IN SEP RULE SO FUNCTION NAME IS 
-                                PUT INTO SYMBOL TABLE FIRST
-                            */
-                            CodeBlock temp;
-                            temp.push_back("func " + *($2));
-                            $$ = new CodeBlock(temp);
-                            // genCode("func " + *($2));
-                            // addTable(*($2));
-                            // $$ = $2;
                         }
                 ;
 
@@ -198,20 +184,26 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                         }
                 ;
 
-idents:             /* empty */         {/*printf("idents -> epsilon\n");*/}
+idents:             /* empty */         
+                        {
+                            /*printf("idents -> epsilon\n");*/
+                            $$ = new CodeBlock()
+                        }
                 |   COMMA IDENT idents  
                         {
                             /*printf("idents -> COMMA IDENT idents\n");*/
+                            CodeBlock temp;
                             if (addTable(*($2))) {
-                                genCode(". " + *($2));
+                                temp.push_back(". " + *($2));
                             };
+                            $$ = new CodeBlock(temp);
                         }
                 ;
 
 statements:         /* empty */                     
                         {
                             /*printf("statements -> epsilon\n");*/
-                            $$ = new string("");
+                            $$ = new CodeBlock();
                         }
                 |   statement SEMICOLON statements  
                         {
@@ -223,39 +215,30 @@ statements:         /* empty */
 statement:          var ASSIGN expression                                                                       
                         {
                             /*printf("statement -> var ASSIGN expression\n");*/
+                            CodeBlock tempBlock;
                             if (exist(*($1)) && exist(*($3))) {             //if both variables exist, then simple assign statement
-                                genCode("= " + *($1) + ", " + *($3));
+                                tempBlock.push_back("= " + *($1) + ", " + *($3));
                             } else if (!exist(*($1)) && exist(*($3))) {     //if left side is an array var and right side is not
                                 string code = *($1);
                                 string toAppend = *($3);
                                 code.insert(0, "[] = ");
                                 code.append(", " + toAppend);
-                                genCode(code);
+                                tempBlock.push_back(code);
                             } 
-                            // else if (exist(*($1)) && !exist(*($3))) {     //if right side is an array var and left side is not
-                            //     string temp = newTemp();
-                            //     string toStore = *($3);
-                            //     toStore.insert(0, "= [] " + temp + ", ");
-                            //     genCode(toStore);
-                            //     genCode("= " + *($1) + ", " + temp);
-                            // } else {                                        //if both sides are an array
-                            //     string code = *($1);
-                            //     string toAppend = *($3);
-                            //     string temp = newTemp();
-                            //     toAppend.insert(0, "= [] " + temp + ", ");
-                            //     genCode(toAppend);
-                            //     //to append is now stored in temp
-                            //     code.insert(0, "[] = ");
-                            //     code.append(", " + temp);
-                            //     genCode(code);
-                            // }
-
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ENDIF                                      
                         {
                             /*printf("statement -> IF bool_expr THEN statement SEMICOLON statements ENDIF\n");*/                            
-                            genCode(": " + *($2));
-                            pop_goto();
+                            CodeBlock tempBlock;
+                            string execLabel = newLabel();
+                            string skiplabel = newLabel();
+                            ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
+                            ($2)->push_back(":= " + skipLabel);
+                            ($2)->push_back(": " + execLabel);
+                            tempBlock = *($2) + *($4) + *(6);
+                            tempBlock.push_back(": " + skipLabel);
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
                         {
@@ -263,56 +246,87 @@ statement:          var ASSIGN expression
                                 printf("statement -> IF bool_expr THEN statement 
                                 SEMICOLON statements ELSE statement SEMICOLON statements ENDIF\n");
                             */
+                            CodeBlock tempBlock;
+                            string execLabel = newLabel();
+                            string skiplabel = newLabel();
+                            ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
+                            ($2)->push_back(":= " + skipLabel);
+                            ($2)->push_back(": " + execLabel);
+                            ($8)->push_front(": " + skipLabel);
+                            tempBlock = *($2) + *($4) + *(6) + *($8) + *($10);
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
                         {
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
-                            genCode(": " + *($2));
-                            pop_goto();
+                            CodeBlock tempBlock;
+                            string execLabel = newLabel();
+                            string skiplabel = newLabel();
+                            string loopLabel = newLabel();
+                            ($2)->push_front(": " + loopLabel);
+                            ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
+                            ($2)->push_back(":= " + skipLabel);
+                            ($2)->push_back(": " + execLabel);
+                            ($6)->push_back(":= " + loopLabel);
+                            ($6)->push_back(": " + skipLabel);
+                            tempBlock = *($2) + *($4) + *(6);
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr
                         {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
+                            CodeBlock tempBlock;
+                            string execLabel = newLabel();
+                            // string loopLabel = newLabel();
+                            ($3)->push_front(": " + execLabel);
+                            ($8)->push_back("?:= " + execLabel + ", " + ($8)->getVal());
+                            tempBlock = *($3) + *($5) + *(8);
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   READ var vars                                                                               
                         {
                             /*printf("statement ->  READ var vars\n");*/
+                            CodeBlock tempBlock;
                             if (!exist(*($2))) {
-                                genCode(".[]< " + *($2));
+                                tempBlock.push_back(".[]< " + *($2));
                             } else {
-                                genCode(".< " + *($2));
+                                tempBlock.push_back(".< " + *($2));
                             }
 
                             if (($3)->compare("") != 0) {
                                 if (!exist(*($3))) {
-                                    genCode(".[]< " + *($3));
+                                    tempBlock.push_back(".[]< " + *($3));
                                 } else {
-                                    genCode(".< " + *($3));
+                                    tempBlock.push_back(".< " + *($3));
                                 }
                             }
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   WRITE var vars                                                                              
                         {
                             /*printf("statement -> WRITE var vars\n");*/
+                            CodeBlock tempBlock;
                             if (!exist(*($2))) {
-                                genCode(".[]> " + *($2));
+                                tempBlock.push_back(".[]> " + *($2));
                             } else {
-                                genCode(".> " + *($2));
+                                tempBlock.push_back(".> " + *($2));
                             }
 
                             if (($3)->compare("") != 0) {
                                 if (!exist(*($3))) {
-                                    genCode(".[]> " + *($3));
+                                    tempBlock.push_back(".[]> " + *($3));
                                 } else {
-                                    genCode(".> " + *($3));
+                                    tempBlock.push_back(".> " + *($3));
                                 }
                             }
+                            $$ = new CodeBlock(tempBlock);
                         }
                 |   CONTINUE                                                                                    
                         {
                             /*printf("statement -> CONTINUE\n");*/
                             //THIS WOULD BE A GOTO STATEMENT
                             // genCode(":= " + soft_pop());
+
                         }
                 |   RETURN expression                                                                           
                         {

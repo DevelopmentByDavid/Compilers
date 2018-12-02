@@ -5,6 +5,7 @@ class CodeBlock {
     private:
         list<string *> curr_code;
         string * returnVal;
+        list<string *> labelWaitingRoom;
     public:
         CodeBlock() {
             returnVal = new string("");
@@ -59,6 +60,13 @@ class CodeBlock {
             if (!obj.isNull()) {
                 ret.returnVal = new string(obj.getVal());
                 ret.curr_code = obj.getCode();
+            }
+            return ret;
+        }
+        CodeBlock operator + (CodeBlock &obj) {
+            CodeBlock ret;
+            if (!obj.isNull()) {
+                ret.curr_code.insert(curr_code.end(), obj.getCode().begin(), obj.getCode().end());
             }
             return ret;
         }
