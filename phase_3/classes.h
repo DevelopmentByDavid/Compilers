@@ -97,9 +97,19 @@ class CodeBlock {
         void pop_back_label_all() {
             while (!labelWaitingRoom.empty()) {
                 string * temp = labelWaitingRoom.back();
+                curr_code.push_back(new string("COWABUNGA"));
                 curr_code.push_back(new string(": " + *temp));
                 labelWaitingRoom.pop_back();
             }
+        }
+        string getLabel() {
+            if (!labelWaitingRoom.empty()) {
+                return *labelWaitingRoom.back();
+            }
+            return "";
+        }
+        bool isLabel() {
+            return labelWaitingRoom.empty();
         }
         list<string *> getLabels() {
             return labelWaitingRoom;

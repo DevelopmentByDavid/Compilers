@@ -235,7 +235,7 @@ statement:          var ASSIGN expression
                         {
                             /*printf("statement -> var ASSIGN expression\n");*/
                             CodeBlock block;
-                            block = *($3);
+                            block = *($1) + *($3);
                             if (exist(($1)->getVal()) && exist(($3)->getVal())) {             //if both variables exist, then simple assign statement
                                 block.push_back("= " + ($1)->getVal() + ", " + ($3)->getVal());
                             } else if (!exist(($1)->getVal()) && exist(($3)->getVal())) {     //if left side is an array var and right side is not
@@ -258,7 +258,6 @@ statement:          var ASSIGN expression
                             ($2)->push_back(": " + execLabel);
                             tempBlock = *($2) + *($4) + *($6);
                             tempBlock.push_back(": " + skipLabel);
-                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   IF bool_expr THEN statement SEMICOLON statements ELSE statement SEMICOLON statements ENDIF  
@@ -276,7 +275,6 @@ statement:          var ASSIGN expression
                             ($2)->push_back(": " + execLabel);
                             ($8)->push_front(": " + skipLabel);
                             tempBlock = *($2) + *($4) + *($6) + *($8) + *($10);
-                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP                            
@@ -306,6 +304,7 @@ statement:          var ASSIGN expression
                             ($8)->push_back("?:= " + execLabel + ", " + ($8)->getVal());
                             tempBlock = *($3) + *($5) + *($8);
                             tempBlock.pop_back_label_all();
+                            tempBlock.push_back("should be right above me");
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   READ var vars                                                                               

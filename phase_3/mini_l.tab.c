@@ -487,12 +487,12 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint16 yyrline[] =
 {
        0,   107,   107,   114,   115,   121,   148,   165,   169,   179,
-     190,   204,   208,   221,   225,   234,   250,   264,   282,   299,
-     311,   331,   351,   361,   371,   391,   395,   426,   448,   452,
-     482,   493,   494,   495,   500,   514,   515,   516,   530,   531,
-     532,   533,   534,   535,   538,   562,   566,   595,   628,   637,
-     643,   652,   656,   670,   684,   700,   723,   745,   759,   775,
-     780,   789,   797,   807,   812,   827,   831
+     190,   204,   208,   221,   225,   234,   250,   263,   280,   297,
+     310,   330,   350,   360,   370,   390,   394,   425,   447,   451,
+     481,   492,   493,   494,   499,   513,   514,   515,   529,   530,
+     531,   532,   533,   534,   537,   561,   565,   594,   627,   636,
+     642,   651,   655,   669,   683,   699,   722,   744,   758,   774,
+     779,   788,   796,   806,   811,   826,   830
 };
 #endif
 
@@ -1535,7 +1535,7 @@ yyreduce:
     {
                             /*printf("statement -> var ASSIGN expression\n");*/
                             CodeBlock block;
-                            block = *((yyvsp[0].myBlock));
+                            block = *((yyvsp[-2].myBlock)) + *((yyvsp[0].myBlock));
                             if (exist(((yyvsp[-2].myBlock))->getVal()) && exist(((yyvsp[0].myBlock))->getVal())) {             //if both variables exist, then simple assign statement
                                 block.push_back("= " + ((yyvsp[-2].myBlock))->getVal() + ", " + ((yyvsp[0].myBlock))->getVal());
                             } else if (!exist(((yyvsp[-2].myBlock))->getVal()) && exist(((yyvsp[0].myBlock))->getVal())) {     //if left side is an array var and right side is not
@@ -1562,14 +1562,13 @@ yyreduce:
                             ((yyvsp[-5].myBlock))->push_back(": " + execLabel);
                             tempBlock = *((yyvsp[-5].myBlock)) + *((yyvsp[-3].myBlock)) + *((yyvsp[-1].myBlock));
                             tempBlock.push_back(": " + skipLabel);
-                            tempBlock.pop_back_label_all();
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1569 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1568 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 17:
-#line 265 "mini_l.y" /* yacc.c:1645  */
+#line 264 "mini_l.y" /* yacc.c:1645  */
     {
                             /*
                                 printf("statement -> IF bool_expr THEN statement 
@@ -1584,14 +1583,13 @@ yyreduce:
                             ((yyvsp[-9].myBlock))->push_back(": " + execLabel);
                             ((yyvsp[-3].myBlock))->push_front(": " + skipLabel);
                             tempBlock = *((yyvsp[-9].myBlock)) + *((yyvsp[-7].myBlock)) + *((yyvsp[-5].myBlock)) + *((yyvsp[-3].myBlock)) + *((yyvsp[-1].myBlock));
-                            tempBlock.pop_back_label_all();
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1591 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1589 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 18:
-#line 283 "mini_l.y" /* yacc.c:1645  */
+#line 281 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement -> WHILE bool_expr BEGINLOOP statement SEMICOLON statements ENDLOOP\n");*/
                             CodeBlock tempBlock;
@@ -1608,11 +1606,11 @@ yyreduce:
                             tempBlock.pop_back_label_all();
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1612 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1610 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 19:
-#line 300 "mini_l.y" /* yacc.c:1645  */
+#line 298 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
                             CodeBlock tempBlock;
@@ -1622,13 +1620,14 @@ yyreduce:
                             ((yyvsp[0].myBlock))->push_back("?:= " + execLabel + ", " + ((yyvsp[0].myBlock))->getVal());
                             tempBlock = *((yyvsp[-5].myBlock)) + *((yyvsp[-3].myBlock)) + *((yyvsp[0].myBlock));
                             tempBlock.pop_back_label_all();
+                            tempBlock.push_back("should be right above me");
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1628 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1627 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 20:
-#line 312 "mini_l.y" /* yacc.c:1645  */
+#line 311 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement ->  READ var vars\n");*/
                             CodeBlock tempBlock;
@@ -1648,11 +1647,11 @@ yyreduce:
                             }
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1652 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1651 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 21:
-#line 332 "mini_l.y" /* yacc.c:1645  */
+#line 331 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement -> WRITE var vars\n");*/
                             CodeBlock tempBlock;
@@ -1672,11 +1671,11 @@ yyreduce:
                             }
                             (yyval.myBlock) = new CodeBlock(tempBlock);
                         }
-#line 1676 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1675 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 22:
-#line 352 "mini_l.y" /* yacc.c:1645  */
+#line 351 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement -> CONTINUE\n");*/
                             //THIS WOULD BE A GOTO STATEMENT
@@ -1686,11 +1685,11 @@ yyreduce:
                             temp.push_back(":= " + label);
                             (yyval.myBlock) = new CodeBlock(temp);
                         }
-#line 1690 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1689 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 23:
-#line 362 "mini_l.y" /* yacc.c:1645  */
+#line 361 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("statement -> RETURN expression\n");*/
                             CodeBlock temp;
@@ -1698,11 +1697,11 @@ yyreduce:
                             temp.push_back("ret " + ((yyvsp[0].myBlock))->getVal());
                             (yyval.myBlock) = new CodeBlock(temp);
                         }
-#line 1702 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1701 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 24:
-#line 372 "mini_l.y" /* yacc.c:1645  */
+#line 371 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("bool_expr -> relation_and_expr bool_expressions\n");*/
                             if (!((yyvsp[0].myBlock))->isNull()) {           //if an bool_expression loop exists
@@ -1719,20 +1718,20 @@ yyreduce:
                                 (yyval.myBlock) = (yyvsp[-1].myBlock);
                             }
                         }
-#line 1723 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1722 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 25:
-#line 391 "mini_l.y" /* yacc.c:1645  */
+#line 390 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("bool_expressions -> epsilon\n");*/
                             (yyval.myBlock) = new CodeBlock();
                         }
-#line 1732 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1731 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 26:
-#line 396 "mini_l.y" /* yacc.c:1645  */
+#line 395 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("bool_expressions -> OR relation_and_expr bool_expressions\n");*/
 
@@ -1761,11 +1760,11 @@ yyreduce:
                                 (yyval.myBlock) = new CodeBlock(block);
                             }
                         }
-#line 1765 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1764 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 27:
-#line 427 "mini_l.y" /* yacc.c:1645  */
+#line 426 "mini_l.y" /* yacc.c:1645  */
     {
                                 /*printf("relation_and_expr -> relation_expr relation_and_expressions\n");*/
                                 if (!((yyvsp[0].myBlock))->isNull()) {
@@ -1784,20 +1783,20 @@ yyreduce:
                                     (yyval.myBlock) = (yyvsp[-1].myBlock);
                                 }
                             }
-#line 1788 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1787 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 28:
-#line 448 "mini_l.y" /* yacc.c:1645  */
+#line 447 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_and_expressions -> epsilon\n");*/
                                     (yyval.myBlock) = new CodeBlock();
                                 }
-#line 1797 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1796 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 29:
-#line 453 "mini_l.y" /* yacc.c:1645  */
+#line 452 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_and_expressions -> AND relation_expr relation_and_expressions\n");*/
                                     //declare base string to "return"
@@ -1826,11 +1825,11 @@ yyreduce:
                                         (yyval.myBlock) = new CodeBlock(block);
                                     }
                                 }
-#line 1830 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1829 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 30:
-#line 483 "mini_l.y" /* yacc.c:1645  */
+#line 482 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_expr -> expression comp expression\n");*/
                                     CodeBlock block;
@@ -1841,32 +1840,32 @@ yyreduce:
                                     block.setVal(temp);
                                     (yyval.myBlock) = new CodeBlock(block);                                   
                                 }
-#line 1845 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1844 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 31:
-#line 493 "mini_l.y" /* yacc.c:1645  */
+#line 492 "mini_l.y" /* yacc.c:1645  */
     {/*printf("relation_expr -> TRUE\n");*/ (yyval.myBlock) = new CodeBlock("1");}
-#line 1851 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1850 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 32:
-#line 494 "mini_l.y" /* yacc.c:1645  */
+#line 493 "mini_l.y" /* yacc.c:1645  */
     {/*printf("relation_expr -> FALSE\n");*/ (yyval.myBlock) = new CodeBlock("0");}
-#line 1857 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1856 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 33:
-#line 496 "mini_l.y" /* yacc.c:1645  */
+#line 495 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_expr -> L_PAREN bool_expr R_PAREN\n");*/
                                     (yyval.myBlock) = (yyvsp[-1].myBlock);
                                 }
-#line 1866 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1865 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 34:
-#line 501 "mini_l.y" /* yacc.c:1645  */
+#line 500 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_expr -> NOT expression comp expression\n");*/
                                     CodeBlock block;
@@ -1880,23 +1879,23 @@ yyreduce:
                                     block.setVal(notTemp);
                                     (yyval.myBlock) = new CodeBlock(block);                                   
                                 }
-#line 1884 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1883 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 35:
-#line 514 "mini_l.y" /* yacc.c:1645  */
+#line 513 "mini_l.y" /* yacc.c:1645  */
     {/*printf("relation_expr -> NOT TRUE\n");*/ (yyval.myBlock) = new CodeBlock("0");}
-#line 1890 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1889 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 36:
-#line 515 "mini_l.y" /* yacc.c:1645  */
+#line 514 "mini_l.y" /* yacc.c:1645  */
     {/*printf("relation_expr -> NOT FALSE\n");*/ (yyval.myBlock) = new CodeBlock("1");}
-#line 1896 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1895 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 37:
-#line 517 "mini_l.y" /* yacc.c:1645  */
+#line 516 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("relation_expr -> NOT L_PAREN b ool_expr R_PAREN\n");*/
                                     CodeBlock block;
@@ -1908,47 +1907,47 @@ yyreduce:
                                     (yyval.myBlock) = new CodeBlock(block);
 
                                 }
-#line 1912 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1911 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 38:
-#line 530 "mini_l.y" /* yacc.c:1645  */
+#line 529 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> EQ\n");*/ (yyval.myString) = new string("== ");}
-#line 1918 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1917 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 39:
-#line 531 "mini_l.y" /* yacc.c:1645  */
+#line 530 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> NEQ\n");*/ (yyval.myString) = new string("!= ");}
-#line 1924 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1923 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 40:
-#line 532 "mini_l.y" /* yacc.c:1645  */
+#line 531 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> LT\n");*/ (yyval.myString) = new string("< ");}
-#line 1930 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1929 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 41:
-#line 533 "mini_l.y" /* yacc.c:1645  */
+#line 532 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> GT\n");*/ (yyval.myString) = new string("> ");}
-#line 1936 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1935 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 42:
-#line 534 "mini_l.y" /* yacc.c:1645  */
+#line 533 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> LTE\n");*/ (yyval.myString) = new string("<= ");}
-#line 1942 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1941 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 43:
-#line 535 "mini_l.y" /* yacc.c:1645  */
+#line 534 "mini_l.y" /* yacc.c:1645  */
     {/*printf("comp -> GTE\n");*/ (yyval.myString) = new string(">= ");}
-#line 1948 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1947 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 44:
-#line 539 "mini_l.y" /* yacc.c:1645  */
+#line 538 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expression -> multiplicative_expr expression_loop\n");*/
 
@@ -1969,20 +1968,20 @@ yyreduce:
                                 (yyval.myBlock) = (yyvsp[-1].myBlock);
                             }
                         }
-#line 1973 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1972 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 45:
-#line 562 "mini_l.y" /* yacc.c:1645  */
+#line 561 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expression_loop -> epsilon\n");*/
                             (yyval.myBlock) = new CodeBlock();
                         }
-#line 1982 "mini_l.tab.c" /* yacc.c:1645  */
+#line 1981 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 46:
-#line 567 "mini_l.y" /* yacc.c:1645  */
+#line 566 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expression_loop -> ADD multiplicative_expr expression_loop\n");*/
 
@@ -2011,11 +2010,11 @@ yyreduce:
                                 (yyval.myBlock) = new CodeBlock(block);
                             }
                         }
-#line 2015 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2014 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 47:
-#line 596 "mini_l.y" /* yacc.c:1645  */
+#line 595 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expression_loop -> SUB  multiplicative_expr expression_loop\n");*/
 
@@ -2045,11 +2044,11 @@ yyreduce:
                                 (yyval.myBlock) = new CodeBlock(block);
                             }
                         }
-#line 2049 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2048 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 48:
-#line 629 "mini_l.y" /* yacc.c:1645  */
+#line 628 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expressions -> expression COMMA expressions\n");*/
 
@@ -2058,40 +2057,40 @@ yyreduce:
                             block = *((yyvsp[-2].myBlock)) + *((yyvsp[0].myBlock));
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2062 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2061 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 49:
-#line 638 "mini_l.y" /* yacc.c:1645  */
+#line 637 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expressions -> expression\n");*/
                             (yyval.myBlock) = (yyvsp[0].myBlock);
                         }
-#line 2071 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2070 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 50:
-#line 643 "mini_l.y" /* yacc.c:1645  */
+#line 642 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("expressions -> epsilon\n");*/
 
                             //might need later but works w/o it atm
                             (yyval.myBlock) = new CodeBlock();
                         }
-#line 2082 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2081 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 51:
-#line 652 "mini_l.y" /* yacc.c:1645  */
+#line 651 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("terms -> epsilon\n");*/
                             (yyval.myBlock) = new CodeBlock();
                         }
-#line 2091 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2090 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 52:
-#line 657 "mini_l.y" /* yacc.c:1645  */
+#line 656 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("terms -> MOD term terms\n");*/
                             CodeBlock block;
@@ -2105,11 +2104,11 @@ yyreduce:
                             block.setVal(temp);
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2109 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2108 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 53:
-#line 671 "mini_l.y" /* yacc.c:1645  */
+#line 670 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("terms -> DIV term terms\n");*/
                             CodeBlock block;
@@ -2123,11 +2122,11 @@ yyreduce:
                             block.setVal(temp);
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2127 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2126 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 54:
-#line 685 "mini_l.y" /* yacc.c:1645  */
+#line 684 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("terms -> MULT term terms\n");*/
                             CodeBlock block;
@@ -2141,11 +2140,11 @@ yyreduce:
                             block.setVal(temp);
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2145 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2144 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 55:
-#line 701 "mini_l.y" /* yacc.c:1645  */
+#line 700 "mini_l.y" /* yacc.c:1645  */
     {
                                     /*printf("multiplicative_expr -> term terms\n");*/
                                     if (!((yyvsp[0].myBlock))->isNull()) {
@@ -2166,11 +2165,11 @@ yyreduce:
                                         (yyval.myBlock) = (yyvsp[-1].myBlock);
                                     }
                                 }
-#line 2170 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2169 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 56:
-#line 724 "mini_l.y" /* yacc.c:1645  */
+#line 723 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> IDENT L_PAREN expressions R_PAREN\n");*/
 
@@ -2192,11 +2191,11 @@ yyreduce:
                             (yyval.myBlock) = new CodeBlock(block);
                             //TODO: ADD GO TO STATEMENT
                         }
-#line 2196 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2195 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 57:
-#line 746 "mini_l.y" /* yacc.c:1645  */
+#line 745 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> NUMBER\n");*/
 
@@ -2210,11 +2209,11 @@ yyreduce:
                             //"return" temp b/c it now stores the number
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2214 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2213 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 58:
-#line 760 "mini_l.y" /* yacc.c:1645  */
+#line 759 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> var\n");*/
                             CodeBlock block;
@@ -2230,20 +2229,20 @@ yyreduce:
                                 (yyval.myBlock) = new CodeBlock(block);
                             }
                         }
-#line 2234 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2233 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 59:
-#line 776 "mini_l.y" /* yacc.c:1645  */
+#line 775 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> L_PAREN expression R_PAREN\n");*/
                             (yyval.myBlock) = (yyvsp[-1].myBlock);
                         }
-#line 2243 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2242 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 60:
-#line 781 "mini_l.y" /* yacc.c:1645  */
+#line 780 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> SUB NUMBER\n");*/
 
@@ -2252,11 +2251,11 @@ yyreduce:
                             block.setVal((string) "-" + *((yyvsp[0].myString)));
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2256 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2255 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 61:
-#line 790 "mini_l.y" /* yacc.c:1645  */
+#line 789 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> SUB var\n");*/
                             CodeBlock block;
@@ -2264,11 +2263,11 @@ yyreduce:
                             block.setVal((string) "-" + ((yyvsp[0].myBlock))->getVal());
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2268 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2267 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 62:
-#line 798 "mini_l.y" /* yacc.c:1645  */
+#line 797 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
                             //SUB A FUNCTION CALL
@@ -2276,20 +2275,20 @@ yyreduce:
                             block.setVal((string) "-" + ((yyvsp[-1].myBlock))->getVal());
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2280 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2279 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 63:
-#line 808 "mini_l.y" /* yacc.c:1645  */
+#line 807 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("var -> IDENT\n");*/
                             (yyval.myBlock) = new CodeBlock(*((yyvsp[0].myString)));
                         }
-#line 2289 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2288 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 64:
-#line 813 "mini_l.y" /* yacc.c:1645  */
+#line 812 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
                             //arr is $1; index is $3
@@ -2301,31 +2300,31 @@ yyreduce:
                             (yyval.myBlock) = new CodeBlock(block);
 
                         }
-#line 2305 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2304 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 65:
-#line 827 "mini_l.y" /* yacc.c:1645  */
+#line 826 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("vars -> epsilon\n");*/
                             (yyval.myBlock) = new CodeBlock();
                         }
-#line 2314 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2313 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
   case 66:
-#line 832 "mini_l.y" /* yacc.c:1645  */
+#line 831 "mini_l.y" /* yacc.c:1645  */
     {
                             /*printf("vars -> COMMA var vars \n");*/
                             CodeBlock block;
                             block = *((yyvsp[-1].myBlock)) + *((yyvsp[0].myBlock));
                             (yyval.myBlock) = new CodeBlock(block);
                         }
-#line 2325 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2324 "mini_l.tab.c" /* yacc.c:1645  */
     break;
 
 
-#line 2329 "mini_l.tab.c" /* yacc.c:1645  */
+#line 2328 "mini_l.tab.c" /* yacc.c:1645  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2552,7 +2551,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 840 "mini_l.y" /* yacc.c:1903  */
+#line 839 "mini_l.y" /* yacc.c:1903  */
 
 
 

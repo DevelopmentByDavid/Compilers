@@ -32,7 +32,6 @@ func main
 : __label__1
 := __label__0
 : __label__2
-: __label__0
 . __temp__8
 = __temp__8, 1
 . __temp__9
@@ -41,6 +40,9 @@ func main
 . __temp__10
 < __temp__10, k, n
 ?:= __label__3, __temp__10
+COWABUNGA
+: __label__0
+should be right above me
 . __temp__16
 . __temp__11
 < __temp__11, i, j
@@ -107,10 +109,11 @@ func main
 : __label__5
 := __label__4
 : __label__6
-: __label__4
 .> k
 := __label__9
 : __label__8
+COWABUNGA
+: __label__4
 .> i
 .> j
 . __temp__37
