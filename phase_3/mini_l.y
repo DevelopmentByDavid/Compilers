@@ -268,12 +268,15 @@ statement:          var ASSIGN expression
                             */
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
-                            string skipLabel = newLabel();
+                            string skipIfLabel = newLabel();
+                            string skipElseLabel = newLabel();
 
                             ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
-                            ($2)->push_back(":= " + skipLabel);
+                            ($2)->push_back(":= " + skipIfLabel);
                             ($2)->push_back(": " + execLabel);
-                            ($8)->push_front(": " + skipLabel);
+                            ($8)->push_front(": " + skipIfLabel);
+                            ($8)->push_front(":= " + skipElseLabel);
+                            ($10)->push_back(": " + skipElseLabel);
                             tempBlock = *($2) + *($4) + *($6) + *($8) + *($10);
                             $$ = new CodeBlock(tempBlock);
                         }
@@ -285,13 +288,15 @@ statement:          var ASSIGN expression
                             string skipLabel = newLabel();
                             string loopLabel = newLabel();
                             ($2)->push_front(": " + loopLabel);
+                            ($2)->pop_back_label_all();
+                            ($4)->pop_back_label_all();
+                            ($6)->pop_back_label_all();
                             ($2)->push_back("?:= " + execLabel + ", " + ($2)->getVal());
                             ($2)->push_back(":= " + skipLabel);
                             ($2)->push_back(": " + execLabel);
                             ($6)->push_back(":= " + loopLabel);
                             ($6)->push_back(": " + skipLabel);
                             tempBlock = *($2) + *($4) + *($6);
-                            tempBlock.pop_back_label_all();
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr
@@ -300,51 +305,37 @@ statement:          var ASSIGN expression
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
                             // string loopLabel = newLabel();
-                            ($3)->push_front(": " + execLabel);
-                            ($8)->push_back("?:= " + execLabel + ", " + ($8)->getVal());
-                            tempBlock = *($3) + *($5) + *($8);
+                            tempBlock = *($3) + *($5);
+                            tempBlock.push_front(": " + execLabel);
                             tempBlock.pop_back_label_all();
-                            tempBlock.push_back("should be right above me");
+                            tempBlock += *($8);
+                            tempBlock.push_back("?:= " + execLabel + ", " + ($8)->getVal());
+                            // tempBlock = *($3) + *($5) + *($8);
+                            // tempBlock.push_back("should be right above me");
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   READ var vars                                                                               
                         {
                             /*printf("statement ->  READ var vars\n");*/
                             CodeBlock tempBlock;
-                            tempBlock = *($2) + *($3);
-                            if (!exist(($2)->getVal())) {
-                                tempBlock.push_back(".[]< " + ($2)->getVal());
-                            } else {
-                                tempBlock.push_back(".< " + ($2)->getVal());
-                            }
-
+                            tempBlock = *($2);
                             if (!($3)->isNull()) {
-                                if (!exist(($3)->getVal())) {
-                                    tempBlock.push_back(".[]< " + ($3)->getVal());
-                                } else {
-                                    tempBlock.push_back(".< " + ($3)->getVal());
-                                }
+                                tempBlock += *($3);
                             }
+                            tempBlock.push_var(($2)->getVal());
+                            tempBlock.pop_var("<");
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   WRITE var vars                                                                              
                         {
                             /*printf("statement -> WRITE var vars\n");*/
                             CodeBlock tempBlock;
-                            tempBlock = *($2) + *($3);
-                            if (!exist(($2)->getVal())) {
-                                tempBlock.push_back(".[]> " + ($2)->getVal());
-                            } else {
-                                tempBlock.push_back(".> " + ($2)->getVal());
-                            }
-
+                            tempBlock = *($2);
                             if (!($3)->isNull()) {
-                                if (!exist(($3)->getVal())) {
-                                    tempBlock.push_back(".[]> " + ($3)->getVal());
-                                } else {
-                                    tempBlock.push_back(".> " + ($3)->getVal());
-                                }
+                                tempBlock += *($3);
                             }
+                            tempBlock.push_var(($2)->getVal());
+                            tempBlock.pop_var(">");
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   CONTINUE                                                                                    
@@ -831,7 +822,12 @@ vars:               /* empty */
                         {
                             /*printf("vars -> COMMA var vars \n");*/
                             CodeBlock block;
-                            block = *($2) + *($3);
+                            block = *($2);
+                            if (!($3)->isNull()) {
+                                block += *($3);
+                            }
+                            block.push_var(($2)->getVal());
+
                             $$ = new CodeBlock(block);
                         }
                 ;

@@ -37,12 +37,10 @@ func main
 . __temp__9
 - __temp__9, k, __temp__8
 .[]> t, __temp__9
+: __label__0
 . __temp__10
 < __temp__10, k, n
 ?:= __label__3, __temp__10
-COWABUNGA
-: __label__0
-should be right above me
 . __temp__16
 . __temp__11
 < __temp__11, i, j
@@ -75,6 +73,7 @@ should be right above me
 =[] __temp__22, t, j
 []= t, i, __temp__22
 []= t, j, k
+:= __label__12
 : __label__11
 : __label__9
 . __temp__24
@@ -110,12 +109,13 @@ should be right above me
 := __label__4
 : __label__6
 .> k
+: __label__4
 := __label__9
 : __label__8
-COWABUNGA
-: __label__4
+: __label__12
 .> i
 .> j
+.> k
 . __temp__37
 . __temp__34
 < __temp__34, i, n
@@ -124,11 +124,11 @@ COWABUNGA
 . __temp__36
 >= __temp__36, i, __temp__35
 && __temp__37, __temp__34, __temp__36
-?:= __label__12, __temp__37
-:= __label__13
-: __label__12
-.[]> t, i
+?:= __label__13, __temp__37
+:= __label__14
 : __label__13
+.[]> t, i
+: __label__14
 . __temp__41
 . __temp__38
 < __temp__38, j, n
@@ -137,10 +137,10 @@ COWABUNGA
 . __temp__40
 >= __temp__40, j, __temp__39
 && __temp__41, __temp__38, __temp__40
-?:= __label__14, __temp__41
-:= __label__15
-: __label__14
-.[]> t, j
+?:= __label__15, __temp__41
+:= __label__16
 : __label__15
+.[]> t, j
+: __label__16
 endfunc
 

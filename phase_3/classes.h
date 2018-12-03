@@ -6,6 +6,7 @@ class CodeBlock {
         list<string *> curr_code;
         string * returnVal;
         list<string *> labelWaitingRoom;
+        list<string *> varWaitingRoom;
     public:
         CodeBlock() {
             returnVal = new string("");
@@ -15,6 +16,7 @@ class CodeBlock {
             returnVal = new string(obj.getVal());
             curr_code = obj.getCode();
             labelWaitingRoom = obj.getLabels();
+            varWaitingRoom = obj.varWaitingRoom;
         }
         CodeBlock(string init) {
             returnVal = new string(init);
@@ -51,7 +53,7 @@ class CodeBlock {
             }
         }
         bool isNull() {
-            if (curr_code.empty() && *returnVal == "" && labelWaitingRoom.empty()) {
+            if (curr_code.empty() && *returnVal == "" && labelWaitingRoom.empty() && varWaitingRoom.empty()) {
                 return true;
             }
             return false;
@@ -65,6 +67,7 @@ class CodeBlock {
             // cout << obj.curr_code.empty() << endl;
             // ret.shipCode();
             labelWaitingRoom = obj.labelWaitingRoom;
+            varWaitingRoom = obj.varWaitingRoom;
             // cout << "end ship" << endl;
             return *this;
         }
@@ -74,6 +77,9 @@ class CodeBlock {
             }
             if (!obj.labelWaitingRoom.empty()) {
                 labelWaitingRoom.insert(labelWaitingRoom.end(), obj.labelWaitingRoom.begin(), obj.labelWaitingRoom.end());
+            }
+            if (!obj.varWaitingRoom.empty()) {
+                varWaitingRoom.insert(varWaitingRoom.end(), obj.varWaitingRoom.begin(), obj.varWaitingRoom.end());
             }
             return *this;
         }
@@ -97,7 +103,6 @@ class CodeBlock {
         void pop_back_label_all() {
             while (!labelWaitingRoom.empty()) {
                 string * temp = labelWaitingRoom.back();
-                curr_code.push_back(new string("COWABUNGA"));
                 curr_code.push_back(new string(": " + *temp));
                 labelWaitingRoom.pop_back();
             }
@@ -113,6 +118,20 @@ class CodeBlock {
         }
         list<string *> getLabels() {
             return labelWaitingRoom;
+        }
+        void push_var(string arg) {
+            varWaitingRoom.push_back(new string(arg));
+        }
+        void pop_var(string prepend) {
+            while (!varWaitingRoom.empty()) {
+                string foo = *varWaitingRoom.back();
+                if (!exist(foo)) {
+                    curr_code.push_back(new string(".[]" + prepend + " " + foo));
+                } else {
+                    curr_code.push_back(new string("." + prepend + " " + foo));
+                }
+                varWaitingRoom.pop_back();
+            }
         }
         
 };

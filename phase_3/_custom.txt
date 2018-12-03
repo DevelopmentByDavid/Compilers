@@ -5,15 +5,11 @@ func main
 . j
 .[] t, 20
 . __temp__0
-= __temp__0, 1
-. __temp__1
-- __temp__1, i, j
-. __temp__2
-+ __temp__2, __temp__0, __temp__1
-. __temp__3
-= __temp__3, 3
-. __temp__4
-% __temp__4, __temp__2, __temp__3
-= k, __temp__4
+= __temp__0, 2
+.> i
+.> j
+.> k
+.> n
+.[]> t, __temp__0
 endfunc
 
