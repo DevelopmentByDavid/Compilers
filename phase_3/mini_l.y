@@ -12,7 +12,6 @@
 
 %union {
     string *myString;
-    int myInt;
     CodeBlock *myBlock;
 }
 
@@ -40,6 +39,7 @@
 %type <myBlock> idents
 %type <myBlock> params
 
+//rules that I added
 %type <myString> fnDecl
 %type <myBlock> bool_expressions
 %type <myBlock> relation_and_expressions
@@ -77,9 +77,6 @@
 %token <myString> SEMICOLON
 %token <myString> COMMA
 %token <myString> NUMBER
-
-// %printer {f/*printf(yyoutput, "'%c'", $$); } <myString>
-
 
 %right      ASSIGN
 %left       OR

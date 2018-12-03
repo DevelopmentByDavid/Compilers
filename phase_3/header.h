@@ -50,4 +50,6 @@ extern int currLine;
 
 //THIS MUST BE INCLUDED LAST FOR STUFF TO WORK
 //IT'S ANNOYING BUT NECESSARY
+//know this from a SO answer that I didn't save the link to
+//google something like include order for parser generators or something
 #include "mini_l.tab.h"
