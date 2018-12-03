@@ -5,7 +5,9 @@
 %{
     #include "mini_l.tab.h"
     #include "header.h"
+    extern YYSTYPE yylval;
     int currLine = 1, currPos = 1;
+    int prevLine = 1, prevPos = 1;
 %}
 
 DIGIT       [0-9]
@@ -58,8 +60,8 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 "<="            {/*printf("LTE\n");*/ currPos += yyleng; return LTE;}
 ">="            {/*printf("GTE\n");*/ currPos+=yyleng; return GTE;}
 
-{IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ currPos+=yyleng; return IDENT;}
-{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; return NUMBER;}
+{IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ yylval.char_pointer = yytext; currPos+=yyleng; return IDENT;}
+{DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ yylval.int_val = atoi(yytext); currPos+=yyleng; return NUMBER;}
 
 ";"             {/*printf("SEMICOLON\n");*/ currPos+=yyleng; return SEMICOLON;}
 ":"             {/*printf("COLON\n");*/ currPos+=yyleng; return COLON;}

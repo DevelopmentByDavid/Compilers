@@ -5,6 +5,9 @@
  
  extern int currLine;
  extern int currPos;
+ extern int prevLine;
+ extern int prevPos;
+ extern bool newLine;
  extern char* yytext;     // defined and maintained in lex.c
  extern int yylex();
  extern void yyerror(char *);
@@ -12,6 +15,7 @@
 %}
 
 %union {
+    int int_val;
     char *char_pointer;
 }
 
@@ -219,7 +223,10 @@ void yyerror( string s ) {  // error handler routine
   extern int  yylineno;    // defined and maintained in lex.c
   extern char* yytext;     // defined and maintained in lex.c
   cerr << "ERROR: " << s << " at symbol \"" << yytext;
-  cerr << "\" on line " << currLine << " column " << currPos << endl;
+  if (newLine) {
+    currLine--;
+    cerr << "\" on line " << currLine << " column " << currPos << endl; 
+  }
   exit( 1 );
 }
 
