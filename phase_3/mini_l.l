@@ -60,6 +60,7 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 
 {IDENTIFIER}    {/*printf("IDENT %s \n", yytext);*/ currPos+=yyleng; yylval.myString = new string(yytext); return IDENT;}
 {DIGIT}+        {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; yylval.myString = new string(yytext);return NUMBER;}
+(-){DIGIT}+     {/*printf("NUMBER %s\n", yytext);*/ currPos += yyleng; yylval.myString = new string(yytext);return NUMBER;}
 
 ";"             {/*printf("SEMICOLON\n");*/ currPos+=yyleng; return SEMICOLON;}
 ":"             {/*printf("COLON\n");*/ currPos+=yyleng; return COLON;}
@@ -70,15 +71,15 @@ IDENTIFIER  ([A-Z]|[a-z])([A-Z]|[a-z]|[0-9])*(_([A-Z]|[a-z]|[0-9])+)*
 "]"             {/*printf("R_SQUARE_BRACKET\n");*/ currPos+=yyleng; return R_SQUARE_BRACKET;}
 ":="            {/*printf("ASSIGN\n");*/ currPos += yyleng; return ASSIGN;}
 
-({DIGIT}|(_))+{IDENTIFIER}      {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
-{IDENTIFIER}(_)+                {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
-{IDENTIFIER}(_)+{IDENTIFIER}   {printf("Error at line %d, column %d: identifier \"%s\" cannot contain consecutive underscores\n", currLine, currPos, yytext); currPos += yyleng; exit(0);}
+({DIGIT}|(_))+{IDENTIFIER}      {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); currPos += yyleng;}
+{IDENTIFIER}(_)+                {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); currPos += yyleng;}
+{IDENTIFIER}(_)+{IDENTIFIER}   {printf("Error at line %d, column %d: identifier \"%s\" cannot contain consecutive underscores\n", currLine, currPos, yytext); currPos += yyleng;}
 
 [ \t]+         {/* ignore spaces */ currPos += yyleng;}
 
 "\n"           {currLine++; currPos = 1;}
 
-.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}
+.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); }
 
 %%
 

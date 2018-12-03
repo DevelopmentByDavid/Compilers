@@ -838,7 +838,6 @@ void yyerror( string s ) {  // error handler routine
   extern char* yytext;     // defined and maintained in lex.c
   cerr << "ERROR: " << s << " at symbol \"" << yytext;
   cerr << "\" on line " << currLine << " column " << currPos << endl;
-  exit( 1 );
 }
 
 void yyerror( char* s ) { yyerror( string(s) ); }
