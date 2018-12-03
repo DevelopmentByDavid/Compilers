@@ -41,10 +41,17 @@ extern string newTemp();
 extern int addTable(string);
 extern int exist(string);
 extern void print();
-extern void func();
+extern void func(string name);
 extern void genCode(string );
 extern void undeclared(string);
 extern string newLabel();
+extern void funcify();
+extern void verify();
+extern void addArr(string);
+extern void checkArr(string);
+extern void inverseCheckArr(string);
+
+extern int currLine;
 
 //THIS MUST BE INCLUDED LAST FOR STUFF TO WORK
 //IT'S ANNOYING BUT NECESSARY

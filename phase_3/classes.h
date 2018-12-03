@@ -6,23 +6,24 @@ class CodeBlock {
         list<string *> curr_code;
         string * returnVal;
         list<string *> labelWaitingRoom;
+        list<int> labelLines;
         list<string *> varWaitingRoom;
     public:
         CodeBlock() {
             returnVal = new string("");
         }
         CodeBlock(CodeBlock &obj) {
-            // cerr << obj.getVal() << endl;
             returnVal = new string(obj.getVal());
             curr_code = obj.getCode();
-            labelWaitingRoom = obj.getLabels();
+            labelWaitingRoom = obj.labelWaitingRoom;
+            labelLines = obj.labelLines;
             varWaitingRoom = obj.varWaitingRoom;
         }
         CodeBlock(string init) {
             returnVal = new string(init);
         }
         ~CodeBlock() {
-            // delete returnVal;
+
         }
         void push_back(string arg) {
             string *copy = new string(arg);
@@ -36,7 +37,6 @@ class CodeBlock {
             return *returnVal;
         }
         void setVal(string arg) {
-            // delete returnVal;
             returnVal = new string(arg);
         }
         list<string *> getCode() {
@@ -47,7 +47,6 @@ class CodeBlock {
                 stringstream k;
                 for (list<string*>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
                     k << **it << endl;
-                    // cerr << "ship" << **it << endl;
                 }
                 genCode(k.str());   
             }
@@ -59,16 +58,11 @@ class CodeBlock {
             return false;
         }
         CodeBlock & operator = (CodeBlock const &obj) {
-            // CodeBlock ret;
-            // cout << "shipping" << endl;
             returnVal = new string(*obj.returnVal);
-            // cout << *obj.returnVal << " asdf" << endl;
             curr_code = obj.curr_code;
-            // cout << obj.curr_code.empty() << endl;
-            // ret.shipCode();
             labelWaitingRoom = obj.labelWaitingRoom;
             varWaitingRoom = obj.varWaitingRoom;
-            // cout << "end ship" << endl;
+            labelLines = obj.labelLines;
             return *this;
         }
         CodeBlock & operator + (CodeBlock const &obj) {
@@ -77,6 +71,9 @@ class CodeBlock {
             }
             if (!obj.labelWaitingRoom.empty()) {
                 labelWaitingRoom.insert(labelWaitingRoom.end(), obj.labelWaitingRoom.begin(), obj.labelWaitingRoom.end());
+            }
+            if (!obj.labelLines.empty()) {
+                labelLines.insert(labelLines.end(), obj.labelLines.begin(), obj.labelLines.end());
             }
             if (!obj.varWaitingRoom.empty()) {
                 varWaitingRoom.insert(varWaitingRoom.end(), obj.varWaitingRoom.begin(), obj.varWaitingRoom.end());
@@ -87,37 +84,28 @@ class CodeBlock {
             *this = *this + obj;
             return *this;
         }
-        void manualDelete() {
-            for (list<string *>::iterator it = curr_code.begin(); it != curr_code.end(); ++it){
-                delete *it;
+        void danglingLabels() {
+            if (!labelWaitingRoom.empty()) {
+                while (!labelWaitingRoom.empty()) {
+                    int temp = labelLines.front();
+                    cerr << "Error Line " << temp << ": continue statement not within a loop" << endl;
+                    labelWaitingRoom.pop_front();
+                    labelLines.pop_front();
+                }
             }
         }
         void push_back_label(string arg) {
+            labelLines.push_back(currLine);
             string *copy = new string(arg);
             labelWaitingRoom.push_back(copy);
-        }
-        void push_front_label(string arg) {
-            string *copy = new string(arg);
-            labelWaitingRoom.push_front(copy);
         }
         void pop_back_label_all() {
             while (!labelWaitingRoom.empty()) {
                 string * temp = labelWaitingRoom.back();
                 curr_code.push_back(new string(": " + *temp));
                 labelWaitingRoom.pop_back();
+                labelLines.pop_back();
             }
-        }
-        string getLabel() {
-            if (!labelWaitingRoom.empty()) {
-                return *labelWaitingRoom.back();
-            }
-            return "";
-        }
-        bool isLabel() {
-            return labelWaitingRoom.empty();
-        }
-        list<string *> getLabels() {
-            return labelWaitingRoom;
         }
         void push_var(string arg) {
             varWaitingRoom.push_back(new string(arg));

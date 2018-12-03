@@ -13,8 +13,8 @@ struct fn;
 //global symbol table
 list<std::string> SYMBOLTABLE;
 list<std::string> CODE;
+list<std::string> ARR;
 list<fn> FUNCTIONS;
-stack<string> GOTO;
 
 //yy stuff declarations
 extern int yylex(void);
@@ -25,6 +25,7 @@ extern FILE* yyin;
 
 
 struct fn {
+    string name;
     list<std::string> code;
     list<std::string> symbolTable;
 };
@@ -53,6 +54,8 @@ int addTable(string toAdd) {
     if (!exist(toAdd)) {
         SYMBOLTABLE.push_front(toAdd);
         return 1;
+    } else {
+        cerr << "Error line " << currLine << ": symbol \'" << toAdd << "\' already declared" << endl; 
     }
     return 0;
 }
@@ -65,10 +68,10 @@ void print() {
     }
 }
 
-void func() {
+void func(string name) {
     //push current stuff into the new fn
     fn temp;
-
+    temp.name = name;
     temp.code = CODE;
     temp.symbolTable = SYMBOLTABLE;
     FUNCTIONS.push_back(temp);
@@ -76,6 +79,9 @@ void func() {
     //clear current
     CODE  = list<string>();
     SYMBOLTABLE = list<string>();
+    ARR = list<string>();
+    //init
+    funcify();
 }
 
 void genCode(string code) {
@@ -94,7 +100,7 @@ string newTemp() {
 
 void undeclared(string foo) {
     if (!exist(foo)) {
-        cerr << "ERROR! \'" + foo + "\' is undeclared" << endl;
+        cerr << "Error line " << currLine << ": symbol \'" << foo << "\' is not declared" << endl; 
     }
 }
 
@@ -107,49 +113,36 @@ string newLabel() {
     return temp.str();
 }
 
-string pop_goto() {
-    if (!GOTO.empty()) {
-        string temp = GOTO.top();
-        GOTO.pop();
-        return temp;
+void funcify() {
+    for (list<fn>::iterator it = FUNCTIONS.begin(); it != FUNCTIONS.end(); ++it) {
+        SYMBOLTABLE.push_back(it->name);
     }
-    return "";
 }
 
-// void addTable(string toAdd) {
-//     symbolTable[symbolIndex] = toAdd;
-//     symbolIndex++;
-// }
+void verify() {
+    for (list<fn>::iterator it = FUNCTIONS.begin(); it != FUNCTIONS.end(); ++it) {
+        if (it->name.compare("main") == 0) {
+            return;
+        }
+    }
+    cerr << "ERROR! No main declaration." << endl;
+}
 
-// int inTable(string toCheck) {
-//     for (int i = 0; i < symbolIndex; i++) {
-//         if (symbolTable[symbolIndex] == toCheck) {
-//             addTable(toCheck);
-//             return 1;
-//         }
-//     }
-//     return 0;
-// }
+void addArr(string foo) {
+    ARR.push_back(foo);
+}
 
-// /*
-//    var related functions below
-// */
-// void scalarVar(char *arg) {
-//     string temp = string(arg);
-//     if (!inTable(temp)) {
-//         k << ". " + string(arg) + "\n"; 
-//     }
-//     free(arg);
-//    // cout << k.str() << endl;
-// }
+void checkArr(string foo) {
+    for (list<string>::iterator it = ARR.begin(); it != ARR.end(); ++it) {
+        if (it->compare(foo) == 0) return;
+    }
+    cerr << "Error Line " << currLine << ": variable is not an array" << endl;
+}
 
-// void arrayVar(char *name, char *size) {
-//     string temp1, temp2;
-//     temp1 = string(name);
-//     temp2 = string(size);
-//     if (!inTable(temp1)) {
-//         k << ". [ ]" << name << ", "<< size << "\n";
-//     }
-//     free(name);
-//     // free(size);
-// }
+void inverseCheckArr(string foo) {
+    for (list<string>::iterator it = ARR.begin(); it != ARR.end(); ++it) {
+        if (it->compare(foo) == 0) {
+            cerr << "Error Line " << currLine << ": must specify index with array type variables" << endl;
+        }
+    }
+}

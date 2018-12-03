@@ -40,6 +40,7 @@
 %type <myBlock> idents
 %type <myBlock> params
 
+%type <myString> fnDecl
 %type <myBlock> bool_expressions
 %type <myBlock> relation_and_expressions
 %type <myBlock> expression_loop
@@ -95,7 +96,7 @@
 %left       MOD
 %left       DIV
 %left       MULT
-%nonassoc   UMINUS
+%right      UMINUS
 %left       L_SQUARE_BRACKET
 %left       R_SQUARE_BRACKET
 %left       L_PAREN
@@ -107,6 +108,7 @@
 program:            functions                
                         {
                             /*printf("program -> functions\n");*/
+                            verify(); //post verification of stuff
                             print();
                         } 
 		        ;
@@ -118,31 +120,26 @@ functions:          /* empty */              {/*printf("functions -> epsilon\n")
                         }
                 ;
 
-function:           FUNCTION IDENT SEMICOLON params
+function:           fnDecl SEMICOLON params
                     BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY  
                         {
                             /*printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS
                             BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statement SEMICOLON statements END_BODY\n");*/
-                            // funcName($2);
-                            // CodeBlock block = *($3);
                             CodeBlock block;
-                            // ($4)->push_front("func " + *($2));
-                            block.push_back("func " + *($2));
-                            // ($6)->shipCode();
-                            // block = block + *($4) + *($6);
-                            // block.shipCode();
-                            // genCode(block.getVal());
-                            // genCode("************");
-                            // genCode(($6)->getVal());
-                            // ($6)->shipCode();
-                            // genCode("************");
-
-                            block = block + *($4) + *($6) + *($9) + *($11);
+                            block.push_back("func " + *($1));
+                            block = block + *($3) + *($5) + *($8) + *($10);
                             block.push_back("endfunc");
                             block.shipCode();
+                            func(*($1));
+                            block.danglingLabels();
 
-                            // cerr << "block " << block.isNull() << endl;
-                            func();
+                        }
+                ;
+
+fnDecl:             FUNCTION IDENT
+                        {
+                            addTable(*($2));
+                            $$ = $2;
                         }
                 ;
 params:             BEGIN_PARAMS declarations END_PARAMS
@@ -169,7 +166,6 @@ declarations:       /* empty */
                 |   declaration SEMICOLON declarations  
                         {
                             /*printf("declarations -> declaration SEMICOLON declarations\n");*/
-                            // ($1)->shipCode();
                             CodeBlock block;
                             block = *($1) + *($3);
                             $$ = new CodeBlock(block);
@@ -184,6 +180,13 @@ declaration:        IDENT idents COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BR
                                 temp.push_back(".[] " + *($1) + ", " + *($6));
                                 temp.setVal(*($1));
                             };
+
+                            if (stoi(*($6)) <= 0) {
+                                cerr << "Error Line " << currLine << ": declaring array with size <= 0" << endl;
+                            }
+
+                            addArr(*($1));
+
                             temp += *($2);
                             $$ = new CodeBlock(temp);
                         }
@@ -304,14 +307,11 @@ statement:          var ASSIGN expression
                             /*printf("statement -> DO BEGINLOOP statement SEMICOLON statements ENDLOOP WHILE bool_expr\n");*/ 
                             CodeBlock tempBlock;
                             string execLabel = newLabel();
-                            // string loopLabel = newLabel();
                             tempBlock = *($3) + *($5);
                             tempBlock.push_front(": " + execLabel);
                             tempBlock.pop_back_label_all();
                             tempBlock += *($8);
                             tempBlock.push_back("?:= " + execLabel + ", " + ($8)->getVal());
-                            // tempBlock = *($3) + *($5) + *($8);
-                            // tempBlock.push_back("should be right above me");
                             $$ = new CodeBlock(tempBlock);
                         }
                 |   READ var vars                                                                               
@@ -341,7 +341,6 @@ statement:          var ASSIGN expression
                 |   CONTINUE                                                                                    
                         {
                             /*printf("statement -> CONTINUE\n");*/
-                            //THIS WOULD BE A GOTO STATEMENT
                             CodeBlock temp;
                             string label = newLabel();
                             temp.push_back_label(label);
@@ -713,10 +712,7 @@ multiplicative_expr:        term terms
 term:               IDENT L_PAREN expressions R_PAREN   
                         {
                             /*printf("term -> IDENT L_PAREN expressions R_PAREN\n");*/
-
-                            //THIS IS A FUNCTION CALL
-                            //SHOULD HANDLE MAYBE AT THE END WITH A STACK OR SOMETHING?
-                            //IDK ATM
+                            undeclared(*($1));
                             CodeBlock block;
                             block = *($3);
                             string temp = newTemp();
@@ -730,7 +726,6 @@ term:               IDENT L_PAREN expressions R_PAREN
                             block.push_back(code);
                             block.setVal(temp);
                             $$ = new CodeBlock(block);
-                            //TODO: ADD GO TO STATEMENT
                         }
                 |   NUMBER                              
                         {
@@ -787,7 +782,6 @@ term:               IDENT L_PAREN expressions R_PAREN
                 |   SUB L_PAREN expression R_PAREN      
                         {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
-                            //SUB A FUNCTION CALL
                             CodeBlock block = *($3);
                             block.setVal((string) "-" + ($3)->getVal());
                             $$ = new CodeBlock(block);
@@ -797,11 +791,15 @@ term:               IDENT L_PAREN expressions R_PAREN
 var:                IDENT                                                 
                         {
                             /*printf("var -> IDENT\n");*/
+                            undeclared(*($1));
+                            inverseCheckArr(*($1));
                             $$ = new CodeBlock(*($1));
                         }
                 |   IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET    
                         {
                             /*printf("var -> IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");*/ 
+                            undeclared(*($1));
+                            checkArr(*($1));
                             //arr is $1; index is $3
                             CodeBlock block;
                             block = *($3);
