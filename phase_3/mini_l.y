@@ -759,7 +759,7 @@ term:               IDENT L_PAREN expressions R_PAREN
                             /*printf("term -> L_PAREN expression R_PAREN\n");*/
                             $$ = $2;
                         }
-                |   SUB NUMBER %prec UMINUS                          
+                |   SUB NUMBER                          
                         {
                             /*printf("term -> SUB NUMBER\n");*/
 
@@ -768,7 +768,7 @@ term:               IDENT L_PAREN expressions R_PAREN
                             block.setVal((string) "-" + *($2));
                             $$ = new CodeBlock(block);
                         }
-                |   SUB var %prec UMINUS                             
+                |   SUB var                             
                         {
                             /*printf("term -> SUB var\n");*/
                             CodeBlock block;
@@ -776,7 +776,7 @@ term:               IDENT L_PAREN expressions R_PAREN
                             block.setVal((string) "-" + ($2)->getVal());
                             $$ = new CodeBlock(block);
                         }
-                |   SUB L_PAREN expression R_PAREN %prec UMINUS         
+                |   SUB L_PAREN expression R_PAREN      
                         {
                             /*printf("term -> SUB L_PAREN expression R_PAREN\n");*/
                             CodeBlock block = *($3);
